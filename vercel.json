@@ -1,0 +1,10 @@
+{
+  "redirects": [
+    {
+      "source": "/pdf/IanEarlBesanez_Harvard_Resume.pdf",
+      "destination": "/pdf/IanEarlBesanez_Resume_withProjects.pdf",
+      "permanent": true
+    }
+  ],
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}
