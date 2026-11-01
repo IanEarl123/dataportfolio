@@ -1,27 +1,59 @@
 <!doctype html>
-<html lang="en" class="scroll-smooth">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ian Earl | Data Analyst Portfolio</title>
-    <meta name="description" content="Ian Earl Besañez — Data Analyst. Power BI, Excel, SQL, Python and workflow automation." />
-    <link rel="icon" href="/img/ian.jpg" />
+    <title>Ian Earl Besañez | Data Analyst Portfolio</title>
+    <meta name="description" content="Ian Earl Besañez is a Data Analyst in the Philippines working with SQL, Power BI, Excel, PostgreSQL, automation and data visualization." />
+    <meta name="author" content="Ian Earl Besañez" />
+    <meta name="theme-color" content="#070B12" />
+    <link rel="canonical" href="https://dataportfolio.vercel.app/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Ian.Analyst" />
+    <meta property="og:title" content="Ian Earl Besañez | Data Analyst Portfolio" />
+    <meta property="og:description" content="SQL, Power BI, Excel, PostgreSQL, automation and data visualization." />
+    <meta property="og:url" content="https://dataportfolio.vercel.app/" />
+    <meta property="og:image" content="https://dataportfolio.vercel.app/img/og-card.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Ian Earl Besañez | Data Analyst Portfolio" />
+    <meta name="twitter:description" content="SQL, Power BI, Excel, PostgreSQL, automation and data visualization." />
+    <meta name="twitter:image" content="https://dataportfolio.vercel.app/img/og-card.jpg" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Ian Earl Besañez",
+        "jobTitle": "Data Analyst",
+        "url": "https://dataportfolio.vercel.app/",
+        "image": "https://dataportfolio.vercel.app/img/ian-portrait.webp",
+        "email": "mailto:ianearlbesanez@gmail.com",
+        "knowsAbout": ["SQL", "Power BI", "Microsoft Excel", "PostgreSQL", "Data Visualization", "Automation"],
+        "sameAs": ["https://github.com/IanEarl123", "https://www.linkedin.com/in/ian-earl-besa%C3%B1ez-6a1886288/"]
+      }
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
+    <link rel="preload" as="image" href="/img/ian-portrait.webp" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
+    <!-- Loaded without blocking the first paint -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'" />
     <script>
-      // Apply the saved theme before first paint to avoid a light/dark flash.
+      // Dark by default. Runs before first paint so there is no flash of light mode.
       try {
-        var t = localStorage.getItem('theme')
-        if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-          document.documentElement.classList.add('dark')
-        }
+        if (localStorage.getItem('theme-v2') === 'light') document.documentElement.classList.remove('dark')
       } catch (e) {}
     </script>
   </head>
   <body>
     <div id="root"></div>
+    <noscript>Ian Earl Besañez, Data Analyst. This site needs JavaScript to display. Contact: ianearlbesanez@gmail.com</noscript>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

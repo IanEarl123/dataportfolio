@@ -31,8 +31,8 @@ export function UploadField({ value, onChange, folder, accept = 'image/*', previ
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
       {preview === 'image' && (
-        <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-dashed border-slate-300 bg-slate-50 dark:border-slate-700 dark:bg-slate-950">
-          {value ? <img src={value} alt="" className="h-full w-full object-cover" /> : <i className="fa-regular fa-image text-2xl text-slate-300" />}
+        <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-dashed border-line bg-raised">
+          {value ? <img src={value} alt="" className="h-full w-full object-cover" /> : <i className="fa-regular fa-image text-2xl text-ink3" />}
         </div>
       )}
       <div className="flex-1 space-y-2">
@@ -59,6 +59,72 @@ export function UploadField({ value, onChange, folder, accept = 'image/*', previ
   )
 }
 
+/** Several photos for one post: upload many at once, reorder, remove. */
+export function GalleryField({ value = [], onChange, folder }) {
+  const toast = useToast()
+  const inputRef = useRef(null)
+  const [progress, setProgress] = useState(null)
+  const images = value ?? []
+
+  const handleFiles = async (e) => {
+    const files = [...(e.target.files ?? [])]
+    e.target.value = ''
+    if (files.length === 0) return
+
+    const added = []
+    for (const [i, file] of files.entries()) {
+      setProgress(`${i + 1}/${files.length}`)
+      try {
+        added.push(await uploadFile(file, folder))
+      } catch (err) {
+        toast.error(`Couldn't upload ${file.name}`, err.message)
+      }
+    }
+    setProgress(null)
+    if (added.length) {
+      onChange([...images, ...added])
+      toast.success(`${added.length} ${added.length === 1 ? 'photo' : 'photos'} added`)
+    }
+  }
+
+  const move = (index, delta) => {
+    const next = [...images]
+    const [item] = next.splice(index, 1)
+    next.splice(index + delta, 0, item)
+    onChange(next)
+  }
+
+  return (
+    <div className="space-y-3">
+      {images.length > 0 && (
+        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {images.map((src, i) => (
+            <motion.li key={src} layout className="group relative aspect-[4/3] overflow-hidden rounded-xl border border-line bg-raised">
+              <img src={src} alt={`Photo ${i + 1}`} className="h-full w-full object-cover" />
+              <div className="absolute inset-x-0 bottom-0 flex justify-center gap-1 bg-page/80 p-1 backdrop-blur">
+                <button type="button" onClick={() => move(i, -1)} disabled={i === 0} aria-label="Move earlier" className="icon-btn h-7 w-7 text-xs disabled:opacity-30">
+                  <i className="fa-solid fa-arrow-left" />
+                </button>
+                <button type="button" onClick={() => move(i, 1)} disabled={i === images.length - 1} aria-label="Move later" className="icon-btn h-7 w-7 text-xs disabled:opacity-30">
+                  <i className="fa-solid fa-arrow-right" />
+                </button>
+                <button type="button" onClick={() => onChange(images.filter((_, n) => n !== i))} aria-label="Remove photo" className="icon-btn h-7 w-7 text-xs hover:!text-red-500">
+                  <i className="fa-solid fa-trash" />
+                </button>
+              </div>
+            </motion.li>
+          ))}
+        </ul>
+      )}
+      <button type="button" onClick={() => inputRef.current?.click()} disabled={!!progress} className="btn-ghost px-3 py-1.5 text-xs">
+        {progress ? <i className="fa-solid fa-spinner fa-spin" /> : <i className="fa-solid fa-images" />}
+        {progress ? `Uploading ${progress}…` : 'Add photos'}
+      </button>
+      <input ref={inputRef} type="file" accept="image/*" multiple onChange={handleFiles} className="hidden" />
+    </div>
+  )
+}
+
 /** Chip input: Enter or comma adds, Backspace on empty removes the last chip. */
 export function TagsField({ value = [], onChange, placeholder = 'Type and press Enter' }) {
   const [draft, setDraft] = useState('')
@@ -73,7 +139,7 @@ export function TagsField({ value = [], onChange, placeholder = 'Type and press 
   return (
     <div className="input flex min-h-[46px] flex-wrap items-center gap-1.5 py-2">
       {tags.map((t) => (
-        <motion.span key={t} layout initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="chip bg-indigo-50 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300">
+        <motion.span key={t} layout initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="chip bg-accent/10 text-accent-ink">
           {t}
           <button type="button" onClick={() => onChange(tags.filter((x) => x !== t))} aria-label={`Remove ${t}`} className="ml-0.5 hover:text-red-600">
             <i className="fa-solid fa-xmark text-[10px]" />
@@ -129,14 +195,18 @@ export function MarkdownField({ value = '', onChange, folder, required }) {
   }
 
   const handleImage = async (e) => {
-    const file = e.target.files?.[0]
+    const files = [...(e.target.files ?? [])]
     e.target.value = ''
-    if (!file) return
+    if (files.length === 0) return
     setBusy(true)
     try {
-      const url = await uploadFile(file, folder)
-      insertAtCursor(`\n![${file.name.replace(/\.[^.]+$/, '')}](${url})\n`)
-      toast.success('Image inserted')
+      let snippet = ''
+      for (const file of files) {
+        const url = await uploadFile(file, folder)
+        snippet += `\n![${file.name.replace(/\.[^.]+$/, '')}](${url})\n`
+      }
+      insertAtCursor(snippet)
+      toast.success(files.length === 1 ? 'Image inserted' : `${files.length} images inserted`)
     } catch (err) {
       toast.error('Upload failed', err.message)
     } finally {
@@ -154,12 +224,12 @@ export function MarkdownField({ value = '', onChange, folder, required }) {
   ]
 
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 bg-slate-50 px-2 py-1.5 dark:border-slate-700 dark:bg-slate-900">
+    <div className="overflow-hidden rounded-xl border border-line">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-raised px-2 py-1.5">
         <div className="flex gap-1">
           {['write', 'preview'].map((t) => (
-            <button key={t} type="button" onClick={() => setTab(t)} className={`relative rounded-lg px-3 py-1 text-xs font-bold capitalize ${tab === t ? 'text-indigo-700 dark:text-white' : 'text-slate-500'}`}>
-              {tab === t && <motion.span layoutId="md-tab" className="absolute inset-0 -z-10 rounded-lg bg-white shadow-sm dark:bg-slate-800" />}
+            <button key={t} type="button" onClick={() => setTab(t)} className={`relative rounded-lg px-3 py-1 text-xs font-bold capitalize ${tab === t ? 'text-accent-ink' : 'text-ink2'}`}>
+              {tab === t && <motion.span layoutId="md-tab" className="absolute inset-0 -z-10 rounded-lg bg-raised" />}
               {t}
             </button>
           ))}
@@ -171,10 +241,10 @@ export function MarkdownField({ value = '', onChange, folder, required }) {
                 <i className={`fa-solid ${t.icon}`} />
               </button>
             ))}
-            <button type="button" onClick={() => fileRef.current?.click()} title="Insert image" aria-label="Insert image" className="icon-btn h-7 w-7 text-xs" disabled={busy}>
+            <button type="button" onClick={() => fileRef.current?.click()} title="Insert images" aria-label="Insert images" className="icon-btn h-7 w-7 text-xs" disabled={busy}>
               <i className={busy ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-image'} />
             </button>
-            <input ref={fileRef} type="file" accept="image/*" onChange={handleImage} className="hidden" />
+            <input ref={fileRef} type="file" accept="image/*" multiple onChange={handleImage} className="hidden" />
           </div>
         )}
       </div>
@@ -185,12 +255,12 @@ export function MarkdownField({ value = '', onChange, folder, required }) {
           onChange={(e) => onChange(e.target.value)}
           required={required}
           rows={14}
-          className="block w-full resize-y bg-white p-4 font-mono text-sm outline-none dark:bg-slate-950"
+          className="block w-full resize-y bg-page/60 p-4 font-mono text-sm text-ink outline-none"
           placeholder="Write in Markdown…"
         />
       ) : (
-        <div className="prose prose-sm prose-slate min-h-[320px] max-w-none bg-white p-4 dark:prose-invert dark:bg-slate-950">
-          {value ? <ReactMarkdown remarkPlugins={[remarkGfm]}>{value}</ReactMarkdown> : <p className="text-slate-400">Nothing to preview.</p>}
+        <div className="article prose-sm min-h-[320px] bg-page/60 p-4">
+          {value ? <ReactMarkdown remarkPlugins={[remarkGfm]}>{value}</ReactMarkdown> : <p className="text-ink3">Nothing to preview.</p>}
         </div>
       )}
     </div>

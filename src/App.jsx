@@ -4,30 +4,31 @@ import { AnimatePresence, motion } from 'framer-motion'
 import Sidebar from './components/layout/Sidebar'
 import Footer from './components/layout/Footer'
 import AdminBar from './components/layout/AdminBar'
+import AmbientBackground from './components/layout/AmbientBackground'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import { Spinner } from './components/ui/States'
 import { pageTransition } from './lib/motion'
 import { useTrackView } from './hooks/useTrackView'
 import Home from './pages/Home'
-import About from './components/sections/About'
-import Expertise from './components/sections/Expertise'
-import Certifications from './components/sections/Certifications'
-import Projects from './components/sections/Projects'
-import Shop from './components/sections/Shop'
-import Experience from './components/sections/Experience'
-import Affiliation from './components/sections/Affiliation'
-import BlogIndex from './pages/BlogIndex'
-import BlogPost from './pages/BlogPost'
-import NotFound from './pages/NotFound'
 
-// The dashboard is only for one person, so keep it out of the public bundle.
+// Everything except the homepage loads on demand to keep the first visit fast.
+const About = lazy(() => import('./components/sections/About'))
+const Expertise = lazy(() => import('./components/sections/Expertise'))
+const Certifications = lazy(() => import('./components/sections/Certifications'))
+const Projects = lazy(() => import('./components/sections/Projects'))
+const Shop = lazy(() => import('./components/sections/Shop'))
+const Experience = lazy(() => import('./components/sections/Experience'))
+const Affiliation = lazy(() => import('./components/sections/Affiliation'))
+const BlogIndex = lazy(() => import('./pages/BlogIndex'))
+const BlogPost = lazy(() => import('./pages/BlogPost'))
+const NotFound = lazy(() => import('./pages/NotFound'))
 const AdminDashboard = lazy(() => import('./admin/AdminDashboard'))
 
 /** Each public page fills the screen and animates in/out on navigation. */
 function Page({ children }) {
   return (
-    <motion.main {...pageTransition} className="min-h-screen pt-16 lg:pt-0">
-      {children}
+    <motion.main {...pageTransition} className="min-h-[calc(100vh-3.5rem)] pt-14 lg:pt-0">
+      <Suspense fallback={<Spinner />}>{children}</Suspense>
     </motion.main>
   )
 }
@@ -56,9 +57,10 @@ export default function App() {
 
   if (isAdminRoute) {
     return (
-      <div className="mesh-bg min-h-screen">
+      <div className="min-h-screen">
+        <AmbientBackground />
         <ProtectedRoute>
-          <Suspense fallback={<Spinner label="Loading dashboard…" />}>
+          <Suspense fallback={<Spinner label="loading dashboard…" />}>
             <motion.div {...pageTransition}>
               <AdminDashboard />
             </motion.div>
@@ -69,10 +71,11 @@ export default function App() {
   }
 
   return (
-    <div className="mesh-bg min-h-screen">
+    <div className="min-h-screen">
+      <AmbientBackground />
       <Sidebar />
 
-      <div className="lg:pl-64">
+      <div className="flex min-h-screen flex-col lg:pl-60">
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>
             {PUBLIC_PAGES.map(([path, Component]) => (

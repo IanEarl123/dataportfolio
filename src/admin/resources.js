@@ -4,7 +4,7 @@ import { formatDate, formatPrice, formatRange } from '../lib/format'
  * One entry per manageable table. The generic ResourceManager + ResourceForm
  * read this config, so adding a field is a one-line change here (plus the SQL column).
  *
- * Field types: text | textarea | markdown | number | date | url | select | boolean | tags | image | file | slug
+ * Field types: text | textarea | markdown | number | date | url | select | boolean | tags | image | images | file | slug
  */
 export const RESOURCES = [
   {
@@ -46,8 +46,9 @@ export const RESOURCES = [
       { name: 'title', label: 'Title', type: 'text', required: true },
       { name: 'slug', label: 'URL slug', type: 'slug', from: 'title', required: true, help: 'yoursite.com/blog/<slug>' },
       { name: 'excerpt', label: 'Excerpt', type: 'textarea', rows: 2 },
-      { name: 'cover_url', label: 'Cover image', type: 'image' },
-      { name: 'content', label: 'Content (Markdown)', type: 'markdown', required: true },
+      { name: 'cover_url', label: 'Cover image', type: 'image', help: 'Shown as a short banner above the article.' },
+      { name: 'content', label: 'Content (Markdown)', type: 'markdown', required: true, help: 'The image button inserts photos inside the text. You can select several at once.' },
+      { name: 'gallery', label: 'Photo gallery', type: 'images', help: 'Shown as a grid below the article.' },
       { name: 'tags', label: 'Tags', type: 'tags' },
       { name: 'published', label: 'Published', type: 'boolean', default: false },
     ],
@@ -85,6 +86,23 @@ export const RESOURCES = [
       },
       { name: 'sort_order', label: 'Sort order', type: 'number', default: 0, half: true },
       { name: 'featured', label: 'Featured', type: 'boolean', default: false },
+    ],
+  },
+  {
+    key: 'skills',
+    label: 'Expertise',
+    singular: 'Skill',
+    icon: 'fa-solid fa-screwdriver-wrench',
+    orderBy: 'sort_order',
+    titleField: 'name',
+    imageField: 'logo_url',
+    subtitle: (r) => (r.logo_url ? 'Custom logo' : r.icon),
+    fields: [
+      { name: 'name', label: 'Name', type: 'text', required: true },
+      { name: 'logo_url', label: 'Logo (optional)', type: 'image', help: 'An uploaded logo is used instead of the icon. Transparent PNGs look best.' },
+      { name: 'icon', label: 'Icon (Font Awesome class)', type: 'text', default: 'fa-solid fa-code', placeholder: 'fa-solid fa-chart-line', help: 'Browse fontawesome.com/icons', half: true },
+      { name: 'color', label: 'Icon color', type: 'text', placeholder: '#00FF88', half: true },
+      { name: 'sort_order', label: 'Sort order', type: 'number', default: 0, half: true },
     ],
   },
   {

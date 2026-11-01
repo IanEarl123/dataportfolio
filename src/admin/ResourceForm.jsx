@@ -3,11 +3,11 @@ import Modal from '../components/ui/Modal'
 import { supabase } from '../lib/supabase'
 import { slugify } from '../lib/format'
 import { useToast } from '../context/ToastContext'
-import { BooleanField, MarkdownField, TagsField, UploadField } from './fields'
+import { BooleanField, GalleryField, MarkdownField, TagsField, UploadField } from './fields'
 
 function emptyValue(field) {
   if (field.default !== undefined) return field.default
-  if (field.type === 'tags') return []
+  if (field.type === 'tags' || field.type === 'images') return []
   if (field.type === 'boolean') return false
   return ''
 }
@@ -29,6 +29,7 @@ function toPayload(resource, values) {
         payload[f.name] = Boolean(v)
         break
       case 'tags':
+      case 'images':
         payload[f.name] = Array.isArray(v) ? v : []
         break
       case 'markdown':
@@ -114,6 +115,8 @@ export default function ResourceForm({ resource, row, open, onClose, onSaved }) 
         return <BooleanField value={value} onChange={(v) => set(f.name, v)} label={value ? 'Yes' : 'No'} />
       case 'tags':
         return <TagsField value={value} onChange={(v) => set(f.name, v)} />
+      case 'images':
+        return <GalleryField value={value} onChange={(v) => set(f.name, v)} folder={resource.key} />
       case 'image':
         return <UploadField value={value} onChange={(v) => set(f.name, v)} folder={resource.key} />
       case 'file':
@@ -160,7 +163,7 @@ export default function ResourceForm({ resource, row, open, onClose, onSaved }) 
               {f.required && <span className="ml-0.5 text-red-500">*</span>}
             </label>
             {renderField(f)}
-            {f.help && <p className="mt-1 text-xs text-slate-400">{f.help}</p>}
+            {f.help && <p className="mt-1 text-xs text-ink3">{f.help}</p>}
           </div>
         ))}
       </form>

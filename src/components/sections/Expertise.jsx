@@ -1,28 +1,47 @@
 import { motion } from 'framer-motion'
-import { TOOLS } from '../../lib/constants'
+import { FALLBACK_SKILLS } from '../../lib/constants'
+import { useCollection } from '../../hooks/useCollection'
+import { usePageMeta } from '../../hooks/usePageMeta'
 import SectionHeading from '../ui/SectionHeading'
 import { Stagger, StaggerItem } from '../ui/Reveal'
+import { SkeletonGrid } from '../ui/States'
 
 export default function Expertise() {
+  usePageMeta('Expertise', 'Tools and technologies: Power BI, Excel, SQL, PostgreSQL, Python, Power Query, Apps Script and more.')
+  const { data, loading } = useCollection('skills')
+  const skills = data.length ? data : FALLBACK_SKILLS
+
   return (
-    <section id="expertise" className="px-6 py-16 md:py-20">
-      <div className="mx-auto max-w-6xl">
-        <SectionHeading title="Tools & Expertise" subtitle="The technologies I use to build data solutions." />
-        <Stagger className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6 lg:grid-cols-8" gap={0.05}>
-          {TOOLS.map((tool) => (
-            <StaggerItem key={tool.name}>
-              <motion.div
-                whileHover={{ y: -8, rotate: -2 }}
-                whileTap={{ scale: 0.95 }}
-                className="card flex flex-col items-center rounded-2xl p-5 text-center hover:shadow-lg"
-              >
-                <i className={`${tool.icon} ${tool.color} mb-3 text-3xl`} />
-                <h3 className="text-[10px] font-bold uppercase tracking-tighter">{tool.name}</h3>
+    <div className="page">
+      <SectionHeading
+        command="SELECT name FROM skills;"
+        title="Tools & Expertise"
+        subtitle="The technologies I use to build data solutions."
+        manageTab="skills"
+      />
+      {loading ? (
+        <SkeletonGrid count={8} className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4" itemClass="h-28" />
+      ) : (
+        <Stagger className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4" gap={0.04}>
+          {skills.map((skill) => (
+            <StaggerItem key={skill.id ?? skill.name}>
+              <motion.div whileHover={{ y: -4 }} whileTap={{ scale: 0.97 }} className="card card-hover group flex h-full flex-col items-center gap-3 p-5 text-center">
+                <span className="flex h-11 w-11 items-center justify-center">
+                  {skill.logo_url ? (
+                    <img src={skill.logo_url} alt="" loading="lazy" className="max-h-full max-w-full object-contain" />
+                  ) : (
+                    <i
+                      className={`${skill.icon || 'fa-solid fa-code'} text-3xl transition-transform duration-300 group-hover:scale-110`}
+                      style={{ color: skill.color || 'rgb(var(--accent-ink))' }}
+                    />
+                  )}
+                </span>
+                <h2 className="font-mono text-xs font-semibold text-ink2">{skill.name}</h2>
               </motion.div>
             </StaggerItem>
           ))}
         </Stagger>
-      </div>
-    </section>
+      )}
+    </div>
   )
 }

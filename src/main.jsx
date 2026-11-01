@@ -7,6 +7,7 @@ import { ThemeProvider } from './context/ThemeContext'
 import { ToastProvider } from './context/ToastContext'
 import { AuthProvider } from './context/AuthContext'
 import { PresenceProvider } from './context/PresenceContext'
+import { SiteProvider } from './context/SiteContext'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -16,9 +17,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <ThemeProvider>
           <ToastProvider>
             <AuthProvider>
-              <PresenceProvider>
-                <App />
-              </PresenceProvider>
+              <SiteProvider>
+                <PresenceProvider>
+                  <App />
+                </PresenceProvider>
+              </SiteProvider>
             </AuthProvider>
           </ToastProvider>
         </ThemeProvider>

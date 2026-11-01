@@ -17,16 +17,16 @@ export default function AdminBar() {
           initial={{ y: 80, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 80, opacity: 0 }}
-          className="fixed bottom-4 left-4 z-[150] lg:left-[17rem] flex items-center gap-1 rounded-full border border-slate-200 bg-white/90 p-1.5 pl-4 shadow-xl backdrop-blur dark:border-slate-700 dark:bg-slate-900/90"
+          className="fixed bottom-4 left-4 z-[150] lg:left-[16rem] flex items-center gap-1 rounded-full border border-line bg-surface/90 p-1.5 pl-4 shadow-xl backdrop-blur"
         >
-          <span className="mr-2 flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-300">
+          <span className="mr-2 flex items-center gap-2 text-xs font-bold text-ink2">
             <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
             </span>
             {onlineCount} live
           </span>
-          <Link to="/admin" className="rounded-full bg-indigo-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-indigo-700">
+          <Link to="/admin" className="rounded-full bg-accent px-3 py-1.5 text-xs font-semibold text-on-accent hover:shadow-glow">
             <i className="fa-solid fa-gauge mr-1.5" />
             Dashboard
           </Link>
@@ -36,7 +36,7 @@ export default function AdminBar() {
               toast.info('Signed out')
             }}
             aria-label="Sign out"
-            className="flex h-8 w-8 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 hover:text-red-600 dark:hover:bg-slate-800"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-ink2 hover:bg-raised hover:text-red-600"
           >
             <i className="fa-solid fa-right-from-bracket" />
           </button>

@@ -66,7 +66,7 @@ export default function AdminLoginModal({ open, onClose }) {
         onSubmit={handleSubmit}
         className="space-y-4"
       >
-        <div className="mb-2 flex items-center gap-3 rounded-2xl bg-indigo-50 p-4 text-sm text-indigo-800 dark:bg-indigo-500/10 dark:text-indigo-200">
+        <div className="mb-2 flex items-center gap-3 rounded-2xl bg-accent/10 p-4 text-sm text-accent-ink">
           <i className="fa-solid fa-shield-halved text-lg" />
           <span>Restricted area. Only the site owner can sign in.</span>
         </div>
@@ -108,7 +108,7 @@ export default function AdminLoginModal({ open, onClose }) {
               type="button"
               onClick={() => setShowPassword((s) => !s)}
               aria-label={showPassword ? 'Hide password' : 'Show password'}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-600"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-ink3 hover:text-accent-ink"
             >
               <i className={showPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'} />
             </button>

@@ -53,8 +53,9 @@ export default function ResourceManager({ resource }) {
     }
     // Clean up any files we uploaded for this row (ignores external links).
     resource.fields
-      .filter((f) => f.type === 'image' || f.type === 'file')
-      .forEach((f) => removeFileByUrl(deleting[f.name]).catch(() => {}))
+      .filter((f) => ['image', 'images', 'file'].includes(f.type))
+      .flatMap((f) => deleting[f.name] ?? [])
+      .forEach((url) => removeFileByUrl(url).catch(() => {}))
     setRows((prev) => prev.filter((r) => r.id !== deleting.id))
     toast.success(`${resource.singular} deleted`)
     setDeleting(null)
@@ -65,11 +66,11 @@ export default function ResourceManager({ resource }) {
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-2xl font-bold">{resource.label}</h2>
-          <p className="text-sm text-slate-500">{rows.length} {rows.length === 1 ? 'item' : 'items'}</p>
+          <p className="text-sm text-ink2">{rows.length} {rows.length === 1 ? 'item' : 'items'}</p>
         </div>
         <div className="flex gap-2">
           <div className="relative flex-1 sm:w-64">
-            <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-xs text-slate-400" />
+            <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-xs text-ink3" />
             <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search…" className="input pl-9" />
           </div>
           <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.95 }} onClick={() => { setEditing(null); setFormOpen(true) }} className="btn-primary shrink-0">
@@ -80,7 +81,7 @@ export default function ResourceManager({ resource }) {
 
       {error && (
         <p className="mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-700 dark:bg-red-500/10 dark:text-red-300">
-          {error.message} — did you run <code>supabase/migrations/001_init.sql</code>?
+          {error.message}. Did you run the latest file in <code>supabase/migrations</code>?
         </p>
       )}
 
@@ -100,20 +101,20 @@ export default function ResourceManager({ resource }) {
                 exit={{ opacity: 0, x: -40, transition: { duration: 0.2 } }}
                 className="card flex items-center gap-4 rounded-2xl p-3 pr-4 hover:shadow-md"
               >
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-raised">
                   {resource.imageField && row[resource.imageField] ? (
                     <img src={row[resource.imageField]} alt="" className="h-full w-full object-cover" />
                   ) : (
-                    <i className={`${row.icon || resource.icon} text-lg text-slate-400`} />
+                    <i className={`${row.icon || resource.icon} text-lg text-ink3`} />
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-bold">{row[resource.titleField]}</p>
-                  <p className="truncate text-xs text-slate-500">{resource.subtitle?.(row)}</p>
+                  <p className="truncate text-xs text-ink2">{resource.subtitle?.(row)}</p>
                 </div>
                 {resource.toggleField && (
                   <div className="hidden items-center gap-2 sm:flex">
-                    <span className="text-xs font-semibold text-slate-400">{resource.toggleLabel}</span>
+                    <span className="text-xs font-semibold text-ink3">{resource.toggleLabel}</span>
                     <Toggle size="sm" checked={!!row[resource.toggleField]} onChange={(v) => handleToggle(row, v)} label={`${resource.toggleLabel} ${row[resource.titleField]}`} />
                   </div>
                 )}

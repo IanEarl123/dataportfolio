@@ -2,13 +2,15 @@
 
 Built with Vite, React, Tailwind CSS, Framer Motion and Supabase (Postgres, Auth, Storage and Realtime).
 
-- **Public site:** a left sidebar where each link opens its own page (Home, About, Expertise, Certifications, Projects, Blog, Shop, Experience with Achievements, Affiliation), a profile photo that turns toward your cursor, and dark mode.
+- **Public site:** a left sidebar where each link opens its own page (Home, About, Expertise, Certifications, Projects, Blog, Shop, Experience with Achievements, Affiliation), a profile photo that turns toward your cursor, a dark analyst / terminal theme with an optional light mode, blog comments and photo galleries.
 - **Secret admin login:** click **"Ian"** in the sidebar logo **3 times quickly**.
 - **Admin dashboard (`/admin`):**
   - Live viewers right now (Realtime presence).
   - Total, unique, today and 7-day views, with views streaming in live.
   - A 14-day chart.
-  - Full CRUD with image and PDF uploads for all 7 content tables.
+  - Full CRUD with image and PDF uploads for all 8 content tables, including Expertise logos and icons.
+  - Change your profile picture with a preview before saving.
+  - Read and delete blog comments.
 
 ---
 
@@ -29,29 +31,31 @@ web/
 │   └── pdf/                   # Resume + certificate PDFs
 ├── supabase/migrations/
 │   ├── 001_init.sql           # Tables, RLS, triggers, analytics RPCs, storage bucket, realtime
-│   └── 002_seed.sql           # Content migrated from the old index.html
+│   ├── 002_seed.sql           # Content migrated from the old index.html
+│   └── 003_redesign.sql       # Profile settings, Expertise, blog gallery, comments
 └── src/
     ├── main.jsx               # Providers: Router → Motion → Theme → Toast → Auth → Presence
     ├── App.jsx                # Routes + animated page transitions
-    ├── index.css              # Tailwind layers + shared component classes (.btn-primary, .card, .input…)
+    ├── index.css              # Theme colors (CSS variables) + shared classes (.btn-primary, .card, .input…)
     ├── lib/
     │   ├── supabase.js        # Supabase client (null-safe until keys are set)
     │   ├── constants.js       # ADMIN_EMAIL, nav links, socials, tools
-    │   ├── storage.js         # uploadFile() / removeFileByUrl() for Supabase Storage
+    │   ├── storage.js         # Shrinks images to WebP, then uploads to Supabase Storage
     │   ├── format.js          # price, date, slug, reading-time helpers
     │   ├── motion.js          # Shared Framer Motion variants
     │   └── session.js         # Anonymous visitor id
     ├── context/
     │   ├── AuthContext.jsx    # signIn (admin email only), signOut, isAdmin
     │   ├── ToastContext.jsx   # Animated toast notifications
-    │   ├── ThemeContext.jsx   # Light/dark toggle
+    │   ├── ThemeContext.jsx   # Dark by default, optional light mode
+    │   ├── SiteContext.jsx    # Profile picture + stats settings, updated live
     │   └── PresenceContext.jsx# Realtime "who's online" channel
-    ├── hooks/                 # useCollection, useTrackView, useTypewriter, useActiveSection
+    ├── hooks/                 # useCollection, useTrackView, useTypewriter, usePageMeta (SEO), useSiteStats
     ├── components/
-    │   ├── layout/            # Sidebar (secret trigger + mobile drawer), Footer, ThemeToggle, AdminBar
+    │   ├── layout/            # Sidebar (secret trigger + mobile drawer), Footer, AmbientBackground, ThemeToggle, AdminBar
     │   ├── auth/              # AdminLoginModal, ProtectedRoute
-    │   ├── sections/          # One component per page + FollowingPortrait (cursor-tracking photo)
-    │   ├── blog/BlogCard.jsx
+    │   ├── sections/          # One component per page + FollowingPortrait, StatsAndTerminal
+    │   ├── blog/              # BlogCard, PostGallery, CommentSection
     │   └── ui/                # Modal, Toggle, ConfirmDialog, Reveal/Stagger, SectionHeading, States
     ├── pages/                 # Home, BlogIndex, BlogPost, NotFound
     └── admin/
@@ -60,6 +64,8 @@ web/
         ├── ResourceForm.jsx   # Generic create/edit form built from resources.js
         ├── fields.jsx         # Upload, Tags, Markdown editor, Boolean fields
         ├── AnalyticsPanel.jsx # Stat tiles, live viewers, daily chart, recent visits
+        ├── ProfilePanel.jsx   # Profile picture with preview, Years of Learning
+        ├── CommentsPanel.jsx  # All blog comments, with delete
         └── AdminDashboard.jsx # Tabs shell (lazy-loaded — not in the public bundle)
 ```
 
@@ -88,8 +94,9 @@ Open http://localhost:5173. The site works, but the database sections show "comi
 1. In the dashboard, open **SQL Editor** and click **New query**.
 2. Paste the whole of `supabase/migrations/001_init.sql` and click **Run**. You should see "Success. No rows returned".
 3. Open another **New query**, paste `supabase/migrations/002_seed.sql`, and click **Run**. This adds your 2 certificates, 6 projects, 1 achievement and a sample blog post.
-4. Check the result:
-   - **Table Editor** should list 8 tables.
+4. Open another **New query**, paste `supabase/migrations/003_redesign.sql`, and click **Run**. This adds comments, the Expertise list, the blog gallery and profile settings. It only adds new things, so it is safe on a project that already has content.
+5. Check the result:
+   - **Table Editor** should list 11 tables.
    - **Storage** should have a public bucket named `portfolio`.
 
 ### Step 4 — Connect the app
@@ -157,3 +164,5 @@ The triple-click on "Ian" only *hides* the login. It isn't security, and it does
   3. Show the field in the matching `components/sections/*.jsx` file.
 - **Change the admin email:** update it in **two** places: `is_admin()` in SQL (then re-run that function) and `ADMIN_EMAIL` in `src/lib/constants.js`.
 - **Reset analytics:** run `truncate public.profile_views;` in the SQL Editor.
+- **Change the theme colors:** edit the CSS variables at the top of `src/index.css`. One block is dark, one is light.
+- **Moving to a custom domain:** update `SITE_URL` in `src/lib/constants.js`, the URLs in `index.html`, `public/robots.txt` and `public/sitemap.xml`.

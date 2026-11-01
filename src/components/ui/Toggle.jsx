@@ -14,7 +14,7 @@ export default function Toggle({ checked, onChange, label, disabled = false, siz
         disabled={disabled}
         onClick={() => onChange(!checked)}
         className={`flex ${dims.track} ${dims.pad} shrink-0 items-center rounded-full transition-colors ${
-          checked ? 'justify-end bg-indigo-600' : 'justify-start bg-slate-300 dark:bg-slate-700'
+          checked ? 'justify-end bg-accent' : 'justify-start bg-line'
         }`}
       >
         <motion.span
@@ -23,7 +23,7 @@ export default function Toggle({ checked, onChange, label, disabled = false, siz
           className={`${dims.knob} rounded-full bg-white shadow`}
         />
       </button>
-      {label && <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{label}</span>}
+      {label && <span className="text-sm font-medium text-ink">{label}</span>}
     </label>
   )
 }

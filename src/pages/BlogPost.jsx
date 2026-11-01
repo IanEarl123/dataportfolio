@@ -6,13 +6,21 @@ import remarkGfm from 'remark-gfm'
 import { supabase } from '../lib/supabase'
 import { formatDate, readingTime } from '../lib/format'
 import { useAuth } from '../context/AuthContext'
+import { usePageMeta } from '../hooks/usePageMeta'
 import { EmptyState, Spinner } from '../components/ui/States'
+import PostGallery from '../components/blog/PostGallery'
+import CommentSection from '../components/blog/CommentSection'
+
+const markdownComponents = {
+  img: ({ node, ...props }) => <img {...props} alt={props.alt ?? ''} loading="lazy" />,
+}
 
 export default function BlogPost() {
   const { slug } = useParams()
   const { isAdmin } = useAuth()
   const [post, setPost] = useState(null)
   const [loading, setLoading] = useState(true)
+  usePageMeta(post?.title ?? 'Blog', post?.excerpt || undefined)
 
   useEffect(() => {
     let cancelled = false
@@ -23,23 +31,21 @@ export default function BlogPost() {
       if (!cancelled) {
         setPost(data)
         setLoading(false)
-        if (data) document.title = `${data.title} | Ian.Analyst`
       }
     }
     load()
     return () => {
       cancelled = true
-      document.title = 'Ian Earl | Data Analyst Portfolio'
     }
   }, [slug])
 
-  if (loading) return <div className="pt-12"><Spinner label="Loading post…" /></div>
+  if (loading) return <div className="page"><Spinner label="loading post…" /></div>
 
   if (!post) {
     return (
-      <div className="px-6 pt-24">
+      <div className="page">
         <EmptyState icon="fa-solid fa-file-circle-question" title="Post not found" message="It may have been moved or unpublished." />
-        <div className="mt-8 text-center">
+        <div className="mt-6 text-center">
           <Link to="/blog" className="btn-ghost"><i className="fa-solid fa-arrow-left" /> Back to blog</Link>
         </div>
       </div>
@@ -47,58 +53,49 @@ export default function BlogPost() {
   }
 
   return (
-    <article className="px-6 pb-24 pt-12 md:pt-16">
-      <div className="mx-auto max-w-3xl">
-        <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="mb-8 flex items-center justify-between">
-          <Link to="/blog" className="text-sm font-semibold text-slate-500 hover:text-indigo-600">
-            <i className="fa-solid fa-arrow-left mr-2" /> All posts
+    <article className="page max-w-3xl">
+      <div className="mb-6 flex items-center justify-between">
+        <Link to="/blog" className="font-mono text-xs text-ink3 transition-colors hover:text-accent-ink">
+          <i className="fa-solid fa-arrow-left mr-2" />cd ../blog
+        </Link>
+        {isAdmin && (
+          <Link to="/admin?tab=blog_posts" className="font-mono text-xs text-accent-ink">
+            <i className="fa-solid fa-pen-to-square mr-1.5" />edit
           </Link>
-          {isAdmin && (
-            <Link to="/admin?tab=blog_posts" className="text-sm font-semibold text-indigo-600">
-              <i className="fa-solid fa-pen-to-square mr-1.5" /> Edit
-            </Link>
-          )}
-        </motion.div>
-
-        {!post.published && (
-          <p className="mb-6 rounded-xl bg-amber-50 p-3 text-sm font-semibold text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
-            Draft — only you can see this.
-          </p>
         )}
-
-        <motion.header initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-          <p className="mb-3 text-sm font-semibold text-indigo-600 dark:text-indigo-400">
-            {formatDate(post.published_at || post.created_at, { month: 'long', day: 'numeric', year: 'numeric' })} · {readingTime(post.content)} min read
-          </p>
-          <h1 className="text-3xl font-extrabold leading-tight md:text-5xl">{post.title}</h1>
-          {post.excerpt && <p className="mt-4 text-lg text-slate-500 dark:text-slate-400">{post.excerpt}</p>}
-          {post.tags?.length > 0 && (
-            <div className="mt-5 flex flex-wrap gap-2">
-              {post.tags.map((t) => <span key={t} className="chip">#{t}</span>)}
-            </div>
-          )}
-        </motion.header>
-
-        {post.cover_url && (
-          <motion.img
-            initial={{ opacity: 0, scale: 0.97 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.15 }}
-            src={post.cover_url}
-            alt=""
-            className="my-10 w-full rounded-4xl shadow-xl"
-          />
-        )}
-
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="prose prose-slate mt-10 max-w-none dark:prose-invert prose-headings:font-bold prose-a:text-indigo-600 prose-img:rounded-2xl"
-        >
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content}</ReactMarkdown>
-        </motion.div>
       </div>
+
+      {!post.published && (
+        <p className="mb-5 rounded-lg border border-amber-400/40 bg-amber-400/10 p-3 text-sm text-amber-700 dark:text-amber-200">
+          Draft: only you can see this.
+        </p>
+      )}
+
+      <motion.header initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+        <p className="mb-3 font-mono text-xs text-cyan-ink">
+          {formatDate(post.published_at || post.created_at, { month: 'long', day: 'numeric', year: 'numeric' })} · {readingTime(post.content)} min read
+        </p>
+        <h1 className="text-3xl font-bold leading-tight text-ink md:text-4xl">{post.title}</h1>
+        {post.excerpt && <p className="mt-3 text-base leading-relaxed text-ink2">{post.excerpt}</p>}
+        {post.tags?.length > 0 && (
+          <div className="mt-4 flex flex-wrap gap-1.5">
+            {post.tags.map((t) => <span key={t} className="chip">#{t}</span>)}
+          </div>
+        )}
+      </motion.header>
+
+      {/* Short banner: the article stays above the fold */}
+      {post.cover_url && (
+        <img src={post.cover_url} alt="" className="mt-6 h-40 w-full rounded-xl border border-line object-cover sm:h-48" />
+      )}
+
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="article mt-8">
+        <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>{post.content}</ReactMarkdown>
+      </motion.div>
+
+      <PostGallery images={post.gallery ?? []} title={post.title} />
+
+      {post.published && <CommentSection postId={post.id} />}
     </article>
   )
 }

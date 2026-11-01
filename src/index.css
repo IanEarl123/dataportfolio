@@ -3,66 +3,185 @@
 @tailwind utilities;
 
 @layer base {
+  /* Light theme. Accent text is darker here because neon green is unreadable on white. */
+  :root {
+    --base: 244 247 250;
+    --surface: 255 255 255;
+    --raised: 236 241 246;
+    --line: 214 222 232;
+    --ink: 11 20 32;
+    --ink2: 61 75 92;
+    --ink3: 90 104 121;
+    --accent: 0 200 110;
+    --accent-ink: 0 117 63;
+    --on-accent: 4 18 11;
+    --cyan: 0 184 208;
+    --cyan-ink: 0 112 127;
+    --grid: 11 20 32;
+    color-scheme: light;
+  }
+
+  /* Dark theme (default): near-black navy with neon green and cyan. */
+  .dark {
+    --base: 7 11 18;
+    --surface: 13 19 29;
+    --raised: 20 28 41;
+    --line: 34 48 68;
+    --ink: 232 238 245;
+    --ink2: 168 180 196;
+    --ink3: 128 142 160;
+    --accent: 0 255 136;
+    --accent-ink: 0 255 136;
+    --on-accent: 4 18 11;
+    --cyan: 0 229 255;
+    --cyan-ink: 0 229 255;
+    --grid: 0 255 136;
+    color-scheme: dark;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
-    @apply bg-slate-50 font-sans text-slate-900 antialiased selection:bg-indigo-100 dark:bg-slate-950 dark:text-slate-100 dark:selection:bg-indigo-500/30;
+    @apply bg-page font-sans text-ink antialiased;
     overflow-x: hidden;
   }
-  section[id] {
-    scroll-margin-top: 5.5rem;
+
+  ::selection {
+    background: rgb(var(--accent) / 0.25);
   }
+
+  h1, h2, h3, h4 {
+    @apply font-display tracking-tight;
+  }
+
+  :focus-visible {
+    outline: 2px solid rgb(var(--cyan-ink));
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: rgb(var(--base)); }
+  ::-webkit-scrollbar-thumb { background: rgb(var(--line)); border-radius: 8px; border: 2px solid rgb(var(--base)); }
+  ::-webkit-scrollbar-thumb:hover { background: rgb(var(--ink3)); }
 }
 
 @layer components {
-  /* The indigo/purple mesh background from the original site */
-  .mesh-bg {
-    background-image:
-      radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
-      radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.12) 0px, transparent 50%);
-    background-attachment: fixed;
+  .page {
+    @apply mx-auto w-full max-w-6xl px-5 py-12 sm:px-8 md:py-16;
   }
 
-  .blob {
-    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
-    animation: morph 8s ease-in-out infinite;
-    background: linear-gradient(45deg, #6366f1, #a855f7);
-    padding: 4px;
+  .glass {
+    @apply border border-line/70 bg-surface/70 backdrop-blur-md;
   }
 
   .card {
-    @apply rounded-4xl border border-slate-100 bg-white shadow-sm transition-colors dark:border-slate-800 dark:bg-slate-900;
+    @apply rounded-2xl border border-line/70 bg-surface/85 shadow-card transition-[border-color,box-shadow] duration-300;
+  }
+  .card-hover {
+    @apply hover:border-accent-ink/50 hover:shadow-glow;
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-indigo-600/20 transition hover:bg-indigo-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-accent px-5 py-2.5 text-sm font-semibold text-on-accent transition duration-200 hover:shadow-glow active:scale-95 disabled:cursor-not-allowed disabled:opacity-60;
   }
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-bold text-slate-700 transition hover:border-indigo-300 hover:text-indigo-600 active:scale-95 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-line bg-surface/60 px-5 py-2.5 text-sm font-semibold text-ink2 transition duration-200 hover:border-cyan-ink/60 hover:text-cyan-ink hover:shadow-glow-cyan active:scale-95 disabled:opacity-60;
   }
   .btn-danger {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-red-700 active:scale-95 disabled:opacity-60;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 active:scale-95 disabled:opacity-60;
   }
   .icon-btn {
-    @apply flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800;
+    @apply flex h-9 w-9 items-center justify-center rounded-lg text-ink3 transition hover:bg-raised hover:text-accent-ink;
   }
 
   .input {
-    @apply w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/15 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100;
+    @apply w-full rounded-xl border border-line bg-page/60 px-4 py-2.5 text-sm text-ink outline-none transition placeholder:text-ink3 focus:border-accent-ink focus:ring-2 focus:ring-accent/20;
   }
   .label {
-    @apply mb-1.5 block text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400;
+    @apply mb-1.5 block font-mono text-[11px] font-semibold uppercase tracking-wider text-ink3;
   }
 
   .chip {
-    @apply inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300;
+    @apply inline-flex items-center gap-1 rounded-md border border-line bg-raised/70 px-2 py-0.5 font-mono text-[11px] text-ink2;
+  }
+
+  .terminal-dots {
+    @apply flex items-center gap-1.5;
+  }
+  .terminal-dots > span {
+    @apply h-2.5 w-2.5 rounded-full;
+  }
+
+  .article {
+    @apply prose prose-slate max-w-none dark:prose-invert prose-headings:font-display prose-headings:tracking-tight prose-headings:text-ink prose-p:text-ink2 prose-li:text-ink2 prose-strong:text-ink prose-a:text-accent-ink prose-blockquote:border-accent-ink prose-blockquote:text-ink2 prose-code:text-cyan-ink prose-code:before:content-none prose-code:after:content-none prose-pre:border prose-pre:border-line prose-pre:bg-page;
+  }
+  /* Inline post images: never wider than the column, and not page-tall. */
+  .article img {
+    @apply mx-auto h-auto max-h-[480px] w-auto max-w-full rounded-xl border border-line;
   }
 }
 
-@keyframes morph {
-  0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
-  50% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
+/* Grid lines, also used as a placeholder pattern on cards */
+.grid-lines {
+  background-image:
+    linear-gradient(rgb(var(--grid) / 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(var(--grid) / 0.05) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.grid-mask {
+  mask-image: radial-gradient(ellipse 90% 70% at 50% 30%, black 30%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 30%, black 30%, transparent 100%);
+}
+
+/* The page grid drifts with a transform, so the browser never repaints it. */
+.grid-drift {
+  position: absolute;
+  inset: -48px;
+  will-change: transform;
+  animation: grid-drift 40s linear infinite;
+}
+
+@keyframes grid-drift {
+  to { transform: translate(48px, 48px); }
+}
+
+.caret::after {
+  content: '';
+  display: inline-block;
+  width: 0.55em;
+  height: 1.05em;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  background: rgb(var(--accent-ink));
+  animation: caret 1s steps(2) infinite;
+}
+
+@keyframes caret {
+  50% { opacity: 0; }
+}
+
+/* Scan line across the portrait */
+.scanline::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 30%;
+  background: linear-gradient(to bottom, transparent, rgb(var(--accent) / 0.12), transparent);
+  animation: scan 6s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes scan {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(340%); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .blob { animation: none; }
   html { scroll-behavior: auto; }
+  .grid-drift, .scanline::after, .caret::after { animation: none; }
 }

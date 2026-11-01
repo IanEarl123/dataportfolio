@@ -27,25 +27,25 @@ function AnimatedNumber({ value }) {
 
 function StatTile({ label, value, icon, live, hint }) {
   return (
-    <motion.div variants={{ hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0 } }} whileHover={{ y: -4 }} className="card rounded-3xl p-5">
+    <motion.div variants={{ hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0 } }} whileHover={{ y: -4 }} className="card rounded-2xl p-5">
       <div className="mb-3 flex items-center justify-between">
-        <span className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">{label}</span>
+        <span className="font-mono text-[11px] uppercase tracking-wide text-ink2">{label}</span>
         {live ? (
-          <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-emerald-600 dark:text-emerald-400">
+          <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-accent-ink">
             <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
             </span>
             Live
           </span>
         ) : (
-          <i className={`${icon} text-slate-300 dark:text-slate-600`} />
+          <i className={`${icon} text-ink3`} />
         )}
       </div>
-      <p className="text-3xl font-extrabold text-slate-900 dark:text-white">
+      <p className="font-display text-3xl font-bold text-ink">
         <AnimatedNumber value={value ?? 0} />
       </p>
-      {hint && <p className="mt-1 text-xs text-slate-400">{hint}</p>}
+      {hint && <p className="mt-1 text-xs text-ink3">{hint}</p>}
     </motion.div>
   )
 }
@@ -57,10 +57,10 @@ function DailyChart({ daily }) {
   const total = daily.reduce((s, d) => s + d.views, 0)
 
   return (
-    <div className="card rounded-3xl p-5 md:p-6">
+    <div className="card rounded-2xl p-5 md:p-6">
       <div className="mb-6 flex items-baseline justify-between gap-4">
-        <h3 className="font-bold text-slate-900 dark:text-white">Views per day</h3>
-        <span className="text-xs text-slate-500 dark:text-slate-400">Last 14 days · {total.toLocaleString()} total</span>
+        <h3 className="font-bold text-ink">Views per day</h3>
+        <span className="text-xs text-ink2">Last 14 days · {total.toLocaleString()} total</span>
       </div>
 
       <div className="relative">
@@ -68,8 +68,8 @@ function DailyChart({ daily }) {
         <div className="pointer-events-none absolute inset-0 flex flex-col justify-between">
           {[max, Math.round(max / 2), 0].map((v, i) => (
             <div key={i} className="flex items-center gap-2">
-              <span className="w-6 text-right text-[10px] tabular-nums text-slate-400">{v}</span>
-              <div className="h-px flex-1 bg-slate-100 dark:bg-slate-800" />
+              <span className="w-6 text-right text-[10px] tabular-nums text-ink3">{v}</span>
+              <div className="h-px flex-1 bg-raised" />
             </div>
           ))}
         </div>
@@ -88,14 +88,14 @@ function DailyChart({ daily }) {
                 initial={{ height: 0 }}
                 animate={{ height: `${(d.views / max) * 100}%` }}
                 transition={{ duration: 0.6, delay: i * 0.03, ease: [0.22, 1, 0.36, 1] }}
-                className={`w-full rounded-t-[4px] ${hover === i ? 'bg-indigo-700 dark:bg-indigo-300' : 'bg-indigo-500 dark:bg-indigo-400'}`}
+                className={`w-full rounded-t-[4px] ${hover === i ? 'bg-cyan' : 'bg-accent'}`}
                 style={{ minHeight: d.views ? 2 : 0 }}
               />
               {hover === i && (
                 <motion.div
                   initial={{ opacity: 0, y: 4 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-slate-900 px-2.5 py-1.5 text-xs text-white shadow-lg dark:bg-white dark:text-slate-900"
+                  className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 -translate-x-1/2 whitespace-nowrap rounded-lg border border-line bg-raised px-2.5 py-1.5 text-xs text-ink shadow-lg"
                 >
                   <span className="font-bold tabular-nums">{d.views}</span> views
                   <span className="block text-[10px] opacity-70">{formatDate(d.day, { weekday: 'short', month: 'short', day: 'numeric' })}</span>
@@ -106,7 +106,7 @@ function DailyChart({ daily }) {
         </div>
       </div>
 
-      <div className="ml-8 mt-2 flex justify-between text-[10px] text-slate-400">
+      <div className="ml-8 mt-2 flex justify-between text-[10px] text-ink3">
         <span>{daily[0] && formatDate(daily[0].day, { month: 'short', day: 'numeric' })}</span>
         <span>Today</span>
       </div>
@@ -163,7 +163,7 @@ export default function AnalyticsPanel() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">Overview</h2>
-          <p className="text-sm text-slate-500">Real-time traffic and content at a glance.</p>
+          <p className="text-sm text-ink2">Real-time traffic and content at a glance.</p>
         </div>
         <motion.button whileTap={{ rotate: 180 }} onClick={load} className="icon-btn" aria-label="Refresh">
           <i className="fa-solid fa-rotate" />
@@ -189,19 +189,19 @@ export default function AnalyticsPanel() {
           <DailyChart daily={stats?.daily ?? []} />
         </div>
 
-        <div className="card rounded-3xl p-5 md:p-6">
+        <div className="card rounded-2xl p-5 md:p-6">
           <h3 className="mb-4 font-bold">Recent visits</h3>
           {recent.length === 0 ? (
-            <p className="text-sm text-slate-400">No visits recorded yet.</p>
+            <p className="text-sm text-ink3">No visits recorded yet.</p>
           ) : (
             <ul className="space-y-3">
               {recent.map((v) => (
                 <motion.li key={v.id} layout initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center justify-between gap-3 text-sm">
                   <div className="min-w-0">
                     <p className="truncate font-semibold">{v.path}</p>
-                    <p className="truncate text-xs text-slate-400">{referrerHost(v.referrer)}</p>
+                    <p className="truncate text-xs text-ink3">{referrerHost(v.referrer)}</p>
                   </div>
-                  <span className="shrink-0 text-xs tabular-nums text-slate-400">
+                  <span className="shrink-0 text-xs tabular-nums text-ink3">
                     {new Date(v.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </motion.li>
@@ -212,29 +212,29 @@ export default function AnalyticsPanel() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="card rounded-3xl p-5 md:p-6 lg:col-span-2">
+        <div className="card rounded-2xl p-5 md:p-6 lg:col-span-2">
           <h3 className="mb-4 font-bold">Content</h3>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {RESOURCES.map((r) => (
-              <div key={r.key} className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-950">
-                <i className={`${r.icon} mb-2 text-indigo-500`} />
-                <p className="text-xl font-extrabold tabular-nums">{counts[r.key] ?? '–'}</p>
-                <p className="text-xs text-slate-500">{r.label}</p>
+              <div key={r.key} className="rounded-2xl bg-raised p-4">
+                <i className={`${r.icon} mb-2 text-accent-ink`} />
+                <p className="font-display text-xl font-bold tabular-nums text-ink">{counts[r.key] ?? '–'}</p>
+                <p className="text-xs text-ink2">{r.label}</p>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="card rounded-3xl p-5 md:p-6">
+        <div className="card rounded-2xl p-5 md:p-6">
           <h3 className="mb-4 font-bold">Top pages</h3>
           {(stats?.top_paths ?? []).length === 0 ? (
-            <p className="text-sm text-slate-400">No data yet.</p>
+            <p className="text-sm text-ink3">No data yet.</p>
           ) : (
             <ul className="space-y-2">
               {stats.top_paths.map((p) => (
                 <li key={p.path} className="flex items-center justify-between text-sm">
                   <span className="truncate font-semibold">{p.path}</span>
-                  <span className="tabular-nums text-slate-500">{Number(p.views).toLocaleString()}</span>
+                  <span className="tabular-nums text-ink2">{Number(p.views).toLocaleString()}</span>
                 </li>
               ))}
             </ul>

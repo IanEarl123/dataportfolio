@@ -2,19 +2,32 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
+import { usePageMeta } from '../hooks/usePageMeta'
 import ThemeToggle from '../components/layout/ThemeToggle'
 import AnalyticsPanel from './AnalyticsPanel'
 import ResourceManager from './ResourceManager'
+import ProfilePanel from './ProfilePanel'
+import CommentsPanel from './CommentsPanel'
 import { RESOURCES, RESOURCE_MAP } from './resources'
 
-const TABS = [{ key: 'overview', label: 'Overview', icon: 'fa-solid fa-chart-simple' }, ...RESOURCES]
+const PANELS = { overview: AnalyticsPanel, profile: ProfilePanel, comments: CommentsPanel }
+
+const TABS = [
+  { key: 'overview', label: 'Overview', icon: 'fa-solid fa-chart-simple' },
+  { key: 'profile', label: 'Profile', icon: 'fa-solid fa-id-badge' },
+  ...RESOURCES,
+  { key: 'comments', label: 'Comments', icon: 'fa-solid fa-comments' },
+]
 
 export default function AdminDashboard() {
   const { user, signOut } = useAuth()
   const toast = useToast()
   const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
-  const tab = RESOURCE_MAP[params.get('tab')] ? params.get('tab') : 'overview'
+  usePageMeta('Admin')
+  const requested = params.get('tab')
+  const tab = RESOURCE_MAP[requested] || PANELS[requested] ? requested : 'overview'
+  const Panel = PANELS[tab]
 
   const handleSignOut = async () => {
     await signOut()
@@ -24,13 +37,13 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/80 backdrop-blur dark:border-slate-800 dark:bg-slate-950/80">
+      <header className="sticky top-0 z-50 glass !border-x-0 !border-t-0">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 md:px-6">
           <div className="flex items-center gap-3">
-            <Link to="/" className="text-xl font-bold">
-              Ian<span className="text-indigo-600 dark:text-indigo-400">.Admin</span>
+            <Link to="/" className="font-mono text-lg font-semibold text-ink">
+              Ian<span className="text-accent-ink">.Admin</span>
             </Link>
-            <span className="hidden truncate text-xs text-slate-400 md:inline">{user?.email}</span>
+            <span className="hidden truncate font-mono text-xs text-ink3 md:inline">{user?.email}</span>
           </div>
           <div className="flex items-center gap-2">
             <Link to="/" className="btn-ghost px-3 py-2 text-xs">
@@ -54,11 +67,11 @@ export default function AdminDashboard() {
                   <button
                     onClick={() => setParams(t.key === 'overview' ? {} : { tab: t.key })}
                     className={`relative flex w-full items-center gap-3 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
-                      active ? 'text-white' : 'text-slate-600 hover:bg-white dark:text-slate-400 dark:hover:bg-slate-900'
+                      active ? 'text-accent-ink' : 'text-ink2 hover:bg-raised'
                     }`}
                   >
                     {active && (
-                      <motion.span layoutId="admin-tab" className="absolute inset-0 -z-10 rounded-xl bg-indigo-600 shadow-lg shadow-indigo-600/25" transition={{ type: 'spring', stiffness: 400, damping: 32 }} />
+                      <motion.span layoutId="admin-tab" className="absolute inset-0 -z-10 rounded-xl border border-accent-ink/30 bg-accent/10" transition={{ type: 'spring', stiffness: 400, damping: 32 }} />
                     )}
                     <i className={`${t.icon} w-4 text-center`} />
                     {t.label}
@@ -78,7 +91,7 @@ export default function AdminDashboard() {
               exit={{ opacity: 0, y: -12 }}
               transition={{ duration: 0.25 }}
             >
-              {tab === 'overview' ? <AnalyticsPanel /> : <ResourceManager resource={RESOURCE_MAP[tab]} />}
+              {Panel ? <Panel /> : <ResourceManager resource={RESOURCE_MAP[tab]} />}
             </motion.div>
           </AnimatePresence>
         </section>

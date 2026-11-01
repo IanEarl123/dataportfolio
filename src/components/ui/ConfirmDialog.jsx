@@ -19,7 +19,7 @@ export default function ConfirmDialog({ open, title = 'Are you sure?', message, 
         </>
       }
     >
-      <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">{message}</p>
+      <p className="text-sm leading-relaxed text-ink2">{message}</p>
     </Modal>
   )
 }

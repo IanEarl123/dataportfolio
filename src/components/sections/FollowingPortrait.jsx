@@ -57,42 +57,30 @@ export default function FollowingPortrait({ src, alt }) {
   const { sx, sy } = usePointerFollow(ref)
 
   // Turn toward the cursor: cursor right -> rotate right, cursor up -> tilt up.
-  const rotateY = useTransform(sx, [-1, 1], [-24, 24])
-  const rotateX = useTransform(sy, [-1, 1], [18, -18])
-  // Shift the photo inside its frame for depth, and nudge the framing toward the cursor.
-  const imgX = useTransform(sx, [-1, 1], ['-5%', '5%'])
-  const imgY = useTransform(sy, [-1, 1], ['-4%', '4%'])
-  const shadowX = useTransform(sx, [-1, 1], [30, -30])
-  const shadowY = useTransform(sy, [-1, 1], [30, -10])
-  const boxShadow = useMotionTemplate`${shadowX}px ${shadowY}px 60px -10px rgba(99, 102, 241, 0.45)`
+  const rotateY = useTransform(sx, [-1, 1], [-18, 18])
+  const rotateX = useTransform(sy, [-1, 1], [14, -14])
+  const shadowX = useTransform(sx, [-1, 1], [24, -24])
+  const shadowY = useTransform(sy, [-1, 1], [24, -8])
+  const boxShadow = useMotionTemplate`${shadowX}px ${shadowY}px 50px -12px rgb(var(--accent) / 0.35)`
   const glareX = useTransform(sx, [-1, 1], [80, 20])
   const glareY = useTransform(sy, [-1, 1], [80, 20])
-  const glare = useMotionTemplate`radial-gradient(circle at ${glareX}% ${glareY}%, rgba(255,255,255,0.35), transparent 55%)`
+  const glare = useMotionTemplate`radial-gradient(circle at ${glareX}% ${glareY}%, rgba(255,255,255,0.22), transparent 55%)`
 
   return (
     <div ref={ref} style={{ perspective: 900 }}>
       <motion.div
         style={reduceMotion ? undefined : { rotateX, rotateY, boxShadow, transformStyle: 'preserve-3d' }}
-        animate={reduceMotion ? undefined : { y: [0, -10, 0] }}
-        transition={{ y: { duration: 6, repeat: Infinity, ease: 'easeInOut' } }}
-        className="blob h-60 w-60 sm:h-72 sm:w-72 md:h-80 md:w-80"
+        className="relative h-56 w-56 rounded-2xl sm:h-64 sm:w-64 lg:h-72 lg:w-72"
       >
-        <div className="relative h-full w-full overflow-hidden rounded-[inherit] bg-white">
-          <motion.img
-            src={src}
-            alt={alt}
-            // The photo is full-body: zoom in around the face (head-and-shoulders crop).
-            style={{
-              scale: 2.3,
-              transformOrigin: '57% 40%',
-              objectPosition: '57% 32%',
-              ...(reduceMotion ? {} : { x: imgX, y: imgY }),
-            }}
-            className="h-full w-full object-cover"
-            draggable={false}
-          />
+        <div className="scanline relative h-full w-full overflow-hidden rounded-2xl border border-accent-ink/40 bg-surface">
+          <img src={src} alt={alt} width="288" height="288" fetchpriority="high" className="h-full w-full object-cover" draggable={false} />
           {!reduceMotion && <motion.div style={{ background: glare }} className="pointer-events-none absolute inset-0" />}
         </div>
+        {/* Corner brackets, like a targeting HUD */}
+        <span className="absolute -left-1.5 -top-1.5 h-5 w-5 rounded-tl-md border-l-2 border-t-2 border-accent-ink" />
+        <span className="absolute -right-1.5 -top-1.5 h-5 w-5 rounded-tr-md border-r-2 border-t-2 border-cyan-ink" />
+        <span className="absolute -bottom-1.5 -left-1.5 h-5 w-5 rounded-bl-md border-b-2 border-l-2 border-cyan-ink" />
+        <span className="absolute -bottom-1.5 -right-1.5 h-5 w-5 rounded-br-md border-b-2 border-r-2 border-accent-ink" />
       </motion.div>
     </div>
   )

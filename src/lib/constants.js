@@ -15,31 +15,47 @@ export const NAV_LINKS = [
   { path: '/affiliation', label: 'Affiliation', icon: 'fa-solid fa-people-group' },
 ]
 
-export const TYPED_STRINGS = ['Ian Earl Besañez', 'Data Analyst', 'Operations Analyst']
+export const SITE_URL = 'https://dataportfolio.vercel.app'
+export const DEFAULT_PORTRAIT = '/img/ian-portrait.webp'
+// Start of BS Information Systems. Editable in Admin > Profile.
+export const DEFAULT_LEARNING_SINCE = 2017
+
+export const TYPED_STRINGS = [
+  'SELECT insights FROM raw_data;',
+  'building dashboards in Power BI',
+  'automating the repetitive work',
+  'turning data into decisions',
+]
+
+export const CORE_STACK = ['SQL', 'Power BI', 'Excel', 'PostgreSQL']
 
 export const RESUME_FILENAME = 'IanEarlBesanez_Resume_withProjects.pdf'
 export const RESUME_URL = `/pdf/${RESUME_FILENAME}`
 
-export const CONTACT = {
-  email: 'ianearlbesanez@gmail.com',
-  phone: '+639635313583',
-  phoneDisplay: '+63 963 531 3583',
-}
+export const CONTACT = { email: 'ianearlbesanez@gmail.com' }
+
+export const GITHUB_URL = 'https://github.com/IanEarl123'
+export const LINKEDIN_URL = 'https://www.linkedin.com/in/ian-earl-besa%C3%B1ez-6a1886288/'
 
 export const SOCIALS = [
-  { label: 'Facebook', href: 'https://web.facebook.com/ianearl.besanez', icon: 'fa-brands fa-facebook-f', hover: 'hover:text-blue-600' },
-  { label: 'Instagram', href: 'https://www.instagram.com/silentchinitoprince/', icon: 'fa-brands fa-instagram', hover: 'hover:text-pink-600' },
-  { label: 'LinkedIn', href: 'https://www.linkedin.com/in/ian-earl-besa%C3%B1ez-6a1886288/', icon: 'fa-brands fa-linkedin-in', hover: 'hover:text-blue-500' },
-  { label: 'GitHub', href: 'https://github.com/IanEarl123', icon: 'fa-brands fa-github', hover: 'hover:text-slate-900 dark:hover:text-white' },
+  { label: 'GitHub', href: GITHUB_URL, icon: 'fa-brands fa-github' },
+  { label: 'LinkedIn', href: LINKEDIN_URL, icon: 'fa-brands fa-linkedin-in' },
+  { label: 'Facebook', href: 'https://web.facebook.com/ianearl.besanez', icon: 'fa-brands fa-facebook-f' },
+  { label: 'Instagram', href: 'https://www.instagram.com/silentchinitoprince/', icon: 'fa-brands fa-instagram' },
 ]
 
-export const TOOLS = [
-  { name: 'Power BI', icon: 'fa-solid fa-chart-column', color: 'text-brand-pbi' },
-  { name: 'Excel', icon: 'fa-solid fa-file-excel', color: 'text-brand-excel' },
-  { name: 'SQL', icon: 'fa-solid fa-database', color: 'text-brand-sql' },
-  { name: 'Python', icon: 'fa-brands fa-python', color: 'text-brand-python' },
-  { name: 'JavaScript', icon: 'fa-brands fa-js', color: 'text-brand-js' },
-  { name: 'HTML5', icon: 'fa-brands fa-html5', color: 'text-brand-html' },
-  { name: 'Tailwind', icon: 'fa-solid fa-wind', color: 'text-brand-tailwind' },
-  { name: 'Apps Script', icon: 'fa-solid fa-gears', color: 'text-slate-500' },
+// Shown on the Expertise page until the skills table has rows.
+export const FALLBACK_SKILLS = [
+  { name: 'Power BI', icon: 'fa-solid fa-chart-column', color: '#F2C811' },
+  { name: 'Excel', icon: 'fa-solid fa-file-excel', color: '#21A366' },
+  { name: 'SQL', icon: 'fa-solid fa-database', color: '#00B4D8' },
+  { name: 'PostgreSQL', icon: 'fa-solid fa-server', color: '#5B8DEF' },
+  { name: 'Python', icon: 'fa-brands fa-python', color: '#4B9CD3' },
+  { name: 'Power Query', icon: 'fa-solid fa-filter', color: '#F2C811' },
+  { name: 'Apps Script', icon: 'fa-solid fa-gears', color: '#34A853' },
+  { name: 'Power Automate', icon: 'fa-solid fa-bolt', color: '#2F96EF' },
+  { name: 'VBA', icon: 'fa-solid fa-table-cells', color: '#21A366' },
+  { name: 'JavaScript', icon: 'fa-brands fa-js', color: '#F7DF1E' },
+  { name: 'HTML5', icon: 'fa-brands fa-html5', color: '#E34F26' },
+  { name: 'Tailwind', icon: 'fa-solid fa-wind', color: '#06B6D4' },
 ]
