@@ -3,6 +3,7 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion, useScroll, useSpring } from 'framer-motion'
 import { CONTACT, NAV_LINKS, SOCIALS } from '../../lib/constants'
 import { useAuth } from '../../context/AuthContext'
+import { useCollection } from '../../hooks/useCollection'
 import ThemeToggle from './ThemeToggle'
 import AdminLoginModal from '../auth/AdminLoginModal'
 
@@ -79,22 +80,31 @@ function NavItems({ pathname, layoutId, onNavigate }) {
   )
 }
 
+const SAFE_URL = /^(https?:\/\/|mailto:)/i
+
+/** Social icons, managed in Admin -> Social Links. Falls back to the built-in list if the table isn't set up. */
 function Socials() {
+  const { data, error } = useCollection('social_links', { match: { is_visible: true } })
+  const links = error ? SOCIALS.map((s) => ({ id: s.label, name: s.label, url: s.href, icon: s.icon })) : data
+
   return (
-    <div className="flex gap-1">
-      {SOCIALS.map((s) => (
-        <motion.a
-          key={s.label}
-          whileHover={{ y: -2 }}
-          href={s.href}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label={s.label}
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-sm text-ink3 transition-colors hover:text-accent-ink"
-        >
-          <i className={s.icon} />
-        </motion.a>
-      ))}
+    <div className="flex flex-wrap gap-1">
+      {links
+        .filter((s) => SAFE_URL.test(s.url))
+        .map((s) => (
+          <motion.a
+            key={s.id}
+            whileHover={{ y: -2 }}
+            href={s.url}
+            target={s.url.startsWith('mailto:') ? undefined : '_blank'}
+            rel="noopener noreferrer"
+            aria-label={s.name}
+            title={s.name}
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-sm text-ink3 transition-colors hover:text-accent-ink"
+          >
+            <i className={s.icon || 'fa-solid fa-link'} />
+          </motion.a>
+        ))}
     </div>
   )
 }
@@ -151,7 +161,7 @@ export default function Sidebar() {
         </nav>
         <div className="space-y-3 border-t border-line/70 px-1 pt-4">
           <TalkButton />
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-2">
             <Socials />
             <ThemeToggle />
           </div>
