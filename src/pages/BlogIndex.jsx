@@ -5,6 +5,10 @@ import { usePageMeta } from '../hooks/usePageMeta'
 import SectionHeading from '../components/ui/SectionHeading'
 import { EmptyState, SkeletonGrid } from '../components/ui/States'
 import BlogCard from '../components/blog/BlogCard'
+import { useEngagement } from '../hooks/useEngagement'
+
+// New key: an earlier version saved "grid" for every visitor automatically.
+const LAYOUT_KEY = 'blog-layout-v2'
 
 export default function BlogIndex() {
   usePageMeta('Blog', 'Notes on analytics, dashboards, automation and what I learn along the way.')
@@ -13,7 +17,24 @@ export default function BlogIndex() {
     ascending: false,
     match: { published: true },
   })
+  const engagement = useEngagement(posts.map((p) => p.id))
   const [tag, setTag] = useState('all')
+  // List view by default; a visitor's own choice is remembered only once they pick one.
+  const [layout, setLayoutState] = useState(() => {
+    try {
+      return localStorage.getItem(LAYOUT_KEY) === 'grid' ? 'grid' : 'list'
+    } catch {
+      return 'list'
+    }
+  })
+  const setLayout = (value) => {
+    setLayoutState(value)
+    try {
+      localStorage.setItem(LAYOUT_KEY, value)
+    } catch {
+      /* storage unavailable: the choice just won't be remembered */
+    }
+  }
   const [query, setQuery] = useState('')
 
   const tags = useMemo(() => ['all', ...new Set(posts.flatMap((p) => p.tags ?? []))], [posts])
@@ -41,9 +62,30 @@ export default function BlogIndex() {
             </button>
           ))}
         </div>
-        <div className="relative w-full md:w-64">
-          <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-xs text-ink3" />
-          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search posts…" aria-label="Search posts" className="input pl-9" />
+        <div className="flex w-full items-center gap-2 md:w-auto">
+          <div className="relative flex-1 md:w-64">
+            <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-xs text-ink3" />
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search posts…" aria-label="Search posts" className="input pl-9" />
+          </div>
+          <div className="flex shrink-0 rounded-xl border border-line bg-surface/60 p-1" role="group" aria-label="Layout">
+            {[
+              { key: 'grid', icon: 'fa-solid fa-table-cells-large', label: 'Grid view' },
+              { key: 'list', icon: 'fa-solid fa-list', label: 'List view' },
+            ].map((v) => (
+              <button
+                key={v.key}
+                type="button"
+                onClick={() => setLayout(v.key)}
+                aria-pressed={layout === v.key}
+                aria-label={v.label}
+                title={v.label}
+                className={`relative flex h-8 w-9 items-center justify-center rounded-lg text-xs transition-colors ${layout === v.key ? 'text-accent-ink' : 'text-ink3 hover:text-ink'}`}
+              >
+                {layout === v.key && <motion.span layoutId="blog-layout" className="absolute inset-0 -z-10 rounded-lg bg-accent/10 ring-1 ring-accent-ink/40" />}
+                <i className={v.icon} />
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -52,7 +94,7 @@ export default function BlogIndex() {
       ) : visible.length === 0 ? (
         <EmptyState icon="fa-solid fa-pen-nib" title="No posts found" message={posts.length ? 'Try a different tag or search.' : 'The first post is on its way.'} />
       ) : (
-        <motion.div layout className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <motion.div layout className={layout === 'list' ? 'mx-auto grid max-w-4xl gap-4' : 'grid gap-5 sm:grid-cols-2 lg:grid-cols-3'}>
           <AnimatePresence mode="popLayout">
             {visible.map((post) => (
               <motion.div
@@ -64,7 +106,7 @@ export default function BlogIndex() {
                 transition={{ duration: 0.2 }}
                 className="h-full"
               >
-                <BlogCard post={post} />
+                <BlogCard layout={layout} post={post} stats={engagement.available ? engagement.get(post.id) : null} onReact={engagement.react} onShared={() => engagement.bump(post.id, 'shares')} />
               </motion.div>
             ))}
           </AnimatePresence>

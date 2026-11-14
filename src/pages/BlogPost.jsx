@@ -10,6 +10,8 @@ import { usePageMeta } from '../hooks/usePageMeta'
 import { EmptyState, Spinner } from '../components/ui/States'
 import PostGallery from '../components/blog/PostGallery'
 import CommentSection from '../components/blog/CommentSection'
+import EngagementBar from '../components/blog/EngagementBar'
+import { useEngagement } from '../hooks/useEngagement'
 
 const markdownComponents = {
   img: ({ node, ...props }) => <img {...props} alt={props.alt ?? ''} loading="lazy" />,
@@ -21,6 +23,7 @@ export default function BlogPost() {
   const [post, setPost] = useState(null)
   const [loading, setLoading] = useState(true)
   usePageMeta(post?.title ?? 'Blog', post?.excerpt || undefined)
+  const engagement = useEngagement(post?.published ? [post.id] : [])
 
   useEffect(() => {
     let cancelled = false
@@ -82,6 +85,17 @@ export default function BlogPost() {
             {post.tags.map((t) => <span key={t} className="chip">#{t}</span>)}
           </div>
         )}
+        {post.published && engagement.available && (
+          <div className="mt-5 max-w-sm">
+            <EngagementBar
+              post={post}
+              stats={engagement.get(post.id)}
+              onReact={engagement.react}
+              onShared={() => engagement.bump(post.id, 'shares')}
+              commentsHref={`/blog/${post.slug}#comments`}
+            />
+          </div>
+        )}
       </motion.header>
 
       {/* Short banner: the article stays above the fold */}
@@ -95,7 +109,7 @@ export default function BlogPost() {
 
       <PostGallery images={post.gallery ?? []} title={post.title} />
 
-      {post.published && <CommentSection postId={post.id} />}
+      {post.published && <CommentSection postId={post.id} onCountChange={(by) => engagement.bump(post.id, 'comments', by)} />}
     </article>
   )
 }

@@ -118,6 +118,25 @@
   .article {
     @apply prose prose-slate max-w-none dark:prose-invert prose-headings:font-display prose-headings:tracking-tight prose-headings:text-ink prose-p:text-ink2 prose-li:text-ink2 prose-strong:text-ink prose-a:text-accent-ink prose-blockquote:border-accent-ink prose-blockquote:text-ink2 prose-code:text-cyan-ink prose-code:before:content-none prose-code:after:content-none prose-pre:border prose-pre:border-line prose-pre:bg-page;
   }
+  /* One frame for every card cover: a soft spotlight so transparent logos stand out in both themes. */
+  .media-panel {
+    background:
+      radial-gradient(circle at 50% 42%, rgb(var(--ink) / 0.07), transparent 70%),
+      rgb(var(--raised) / 0.8);
+    box-shadow: inset 0 0 0 1px rgb(var(--line) / 0.7);
+  }
+  .media-img {
+    filter: drop-shadow(0 6px 12px rgb(0 0 0 / 0.22));
+  }
+  .bg-checker {
+    background-color: #fff;
+    background-image:
+      linear-gradient(45deg, #e5e7eb 25%, transparent 25%), linear-gradient(-45deg, #e5e7eb 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #e5e7eb 75%), linear-gradient(-45deg, transparent 75%, #e5e7eb 75%);
+    background-size: 12px 12px;
+    background-position: 0 0, 0 6px, 6px -6px, -6px 0;
+  }
+
   /* Inline post images: never wider than the column, and not page-tall. */
   .article img {
     @apply mx-auto h-auto max-h-[480px] w-auto max-w-full rounded-xl border border-line;

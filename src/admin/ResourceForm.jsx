@@ -3,7 +3,7 @@ import Modal from '../components/ui/Modal'
 import { supabase } from '../lib/supabase'
 import { slugify } from '../lib/format'
 import { useToast } from '../context/ToastContext'
-import { BooleanField, GalleryField, MarkdownField, TagsField, UploadField } from './fields'
+import { BooleanField, GalleryField, MarkdownField, RelationField, TagsField, UploadField } from './fields'
 
 function emptyValue(field) {
   if (field.default !== undefined) return field.default
@@ -102,6 +102,8 @@ export default function ResourceForm({ resource, row, open, onClose, onSaved }) 
         return <input {...common} type="date" value={value ?? ''} onChange={(e) => set(f.name, e.target.value)} />
       case 'url':
         return <input {...common} type="url" placeholder={f.placeholder ?? 'https://'} value={value ?? ''} onChange={(e) => set(f.name, e.target.value)} />
+      case 'relation':
+        return <RelationField id={id} value={value} onChange={(v) => set(f.name, v)} table={f.table} labelField={f.labelField} orderBy={f.orderBy} />
       case 'select':
         return (
           <select {...common} value={value ?? ''} onChange={(e) => set(f.name, e.target.value)}>
@@ -118,7 +120,7 @@ export default function ResourceForm({ resource, row, open, onClose, onSaved }) 
       case 'images':
         return <GalleryField value={value} onChange={(v) => set(f.name, v)} folder={resource.key} />
       case 'image':
-        return <UploadField value={value} onChange={(v) => set(f.name, v)} folder={resource.key} />
+        return <UploadField value={value} onChange={(v) => set(f.name, v)} folder={resource.key} removeBg={!!f.removeBg} />
       case 'file':
         return <UploadField value={value} onChange={(v) => set(f.name, v)} folder={resource.key} accept={f.accept} preview="none" />
       case 'slug':

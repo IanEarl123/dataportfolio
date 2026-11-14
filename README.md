@@ -25,6 +25,7 @@ web/
 ├── postcss.config.js
 ├── .env.example               # Copy to .env.local
 ├── vercel.json                # SPA rewrites (Vercel)
+├── api/                       # Server functions (Vercel): verified comments + Brevo email
 ├── public/
 │   ├── _redirects             # SPA rewrites (Netlify)
 │   ├── img/                   # Your photo + certificate images
@@ -32,7 +33,8 @@ web/
 ├── supabase/migrations/
 │   ├── 001_init.sql           # Tables, RLS, triggers, analytics RPCs, storage bucket, realtime
 │   ├── 002_seed.sql           # Content migrated from the old index.html
-│   └── 003_redesign.sql       # Profile settings, Expertise, blog gallery, comments
+│   ├── 003_redesign.sql       # Profile settings, Expertise, blog gallery, comments
+│   └── 004_engagement.sql     # Verified comments, replies, reactions, shares, cert sections
 └── src/
     ├── main.jsx               # Providers: Router → Motion → Theme → Toast → Auth → Presence
     ├── App.jsx                # Routes + animated page transitions
@@ -141,6 +143,42 @@ Open http://localhost:5173. The site works, but the database sections show "comi
 (For Netlify, use base directory `web`, build command `npm run build`, publish directory `web/dist`. `public/_redirects` handles routing.)
 
 ---
+
+### Step 8 — Turn on verified comments (Brevo email)
+
+Comments use a 6-digit email code so every commenter has a real address. The email is sent by
+a small server function in `api/`, which Vercel deploys with the site.
+
+1. In Supabase, run `supabase/migrations/004_engagement.sql` in the SQL Editor. This adds comment
+   verification, replies, reactions, shares and certificate sections. Your existing content stays.
+2. Create a free account at https://www.brevo.com (300 emails/day).
+3. In Brevo, go to **Senders, Domains & Dedicated IPs → Senders** and add and verify the address
+   emails will come from. An address on your own domain lands in inboxes most reliably; a Gmail
+   sender works but is more likely to go to spam.
+4. In Brevo, go to **SMTP & API → API Keys → Generate a new API key** and copy it.
+5. In Supabase, go to **Project Settings → API Keys** and copy the **secret** key (or the legacy
+   **service_role** key). It bypasses all security rules, so it only ever goes into Vercel.
+6. In Vercel, go to **Project → Settings → Environment Variables** and add:
+
+   | Name | Value |
+   |---|---|
+   | `SUPABASE_SERVICE_ROLE_KEY` | the Supabase secret key |
+   | `BREVO_API_KEY` | the Brevo API key |
+   | `BREVO_SENDER_EMAIL` | the verified sender address |
+   | `PUBLIC_SITE_URL` | your live address, e.g. `https://your-site.vercel.app` |
+   | `ADMIN_NOTIFY_EMAIL` | optional: where new-comment alerts go |
+
+7. Redeploy (Deployments → ⋯ → Redeploy) so the functions pick up the new variables.
+
+**Locally:** put the same values (without `VITE_`) in `.env.local` to send real emails. If
+`BREVO_API_KEY` is empty, `npm run dev` prints each email, including the code, in the terminal.
+
+**How it works:** the first comment from an address waits for its emailed code. After that, the
+visitor's browser keeps a token, so their next comments publish straight away. Codes expire after
+15 minutes and lock after 5 wrong tries. Each address can post 5 comments per 10 minutes. Publicly,
+commenters show their name and a masked email (`ma***@gmail.com`); only you see full addresses,
+in **Admin → Comments**, where you can also reply, heart and delete. You get an email for every
+new comment, and the Comments tab shows a badge with the unread count.
 
 ## How the security works
 

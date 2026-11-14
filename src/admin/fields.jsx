@@ -1,47 +1,105 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { uploadFile } from '../lib/storage'
+import { removeBackground } from '../lib/removeBackground'
+import { supabase } from '../lib/supabase'
 import { useToast } from '../context/ToastContext'
 import Toggle from '../components/ui/Toggle'
 
-/** Upload button + URL input. Used for images and PDFs. */
-export function UploadField({ value, onChange, folder, accept = 'image/*', preview = 'image' }) {
+const canClean = (file) => file.type.startsWith('image/') && !['image/gif', 'image/svg+xml'].includes(file.type)
+
+/**
+ * Upload button + URL input. Used for images and PDFs. With removeBg, plain
+ * backgrounds (logos, badges) are removed automatically; photos are left as they are.
+ */
+export function UploadField({ value, onChange, folder, accept = 'image/*', preview = 'image', removeBg = false }) {
   const toast = useToast()
   const inputRef = useRef(null)
-  const [busy, setBusy] = useState(false)
+  const [busy, setBusy] = useState(null)
+  const [original, setOriginal] = useState(null) // the file before its background was removed
 
   const handleFile = async (e) => {
     const file = e.target.files?.[0]
     e.target.value = ''
     if (!file) return
-    setBusy(true)
+    setOriginal(null)
     try {
-      const url = await uploadFile(file, folder)
-      onChange(url)
+      if (removeBg && canClean(file)) {
+        setBusy('Removing background…')
+        const result = await removeBackground(file, file.name).catch(() => ({ changed: false }))
+        if (result.changed) {
+          setBusy('Uploading…')
+          onChange(await uploadFile(result.file, folder))
+          setOriginal(file)
+          toast.success('Background removed', 'Not right? Use "Keep original".')
+          return
+        }
+      }
+      setBusy('Uploading…')
+      onChange(await uploadFile(file, folder))
       toast.success('Uploaded', file.name)
     } catch (err) {
       toast.error('Upload failed', err.message)
     } finally {
-      setBusy(false)
+      setBusy(null)
+    }
+  }
+
+  const keepOriginal = async () => {
+    setBusy('Uploading…')
+    try {
+      onChange(await uploadFile(original, folder))
+      setOriginal(null)
+      toast.success('Using the original image')
+    } catch (err) {
+      toast.error('Upload failed', err.message)
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  // For images uploaded before this feature existed.
+  const cleanCurrent = async () => {
+    setBusy('Removing background…')
+    try {
+      const result = await removeBackground(value, 'image')
+      if (!result.changed) return toast.info('Left as it is', `This image ${result.reason}.`)
+      setBusy('Uploading…')
+      onChange(await uploadFile(result.file, folder))
+      toast.success('Background removed')
+    } catch (err) {
+      toast.error("Couldn't remove the background", err.message)
+    } finally {
+      setBusy(null)
     }
   }
 
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
       {preview === 'image' && (
-        <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-dashed border-line bg-raised">
-          {value ? <img src={value} alt="" className="h-full w-full object-cover" /> : <i className="fa-regular fa-image text-2xl text-ink3" />}
+        <div className={`flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-dashed border-line ${value && removeBg ? 'bg-checker' : 'bg-raised'}`}>
+          {value ? <img src={value} alt="" className={`h-full w-full ${removeBg ? 'object-contain p-1.5' : 'object-cover'}`} /> : <i className="fa-regular fa-image text-2xl text-ink3" />}
         </div>
       )}
       <div className="flex-1 space-y-2">
         <input type="text" inputMode="url" value={value ?? ''} onChange={(e) => onChange(e.target.value)} placeholder="https://… or upload a file" className="input" />
         <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={() => inputRef.current?.click()} disabled={busy} className="btn-ghost px-3 py-1.5 text-xs">
+          <button type="button" onClick={() => inputRef.current?.click()} disabled={!!busy} className="btn-ghost px-3 py-1.5 text-xs">
             {busy ? <i className="fa-solid fa-spinner fa-spin" /> : <i className="fa-solid fa-cloud-arrow-up" />}
-            {busy ? 'Uploading…' : 'Upload'}
+            {busy ?? 'Upload'}
           </button>
+          {original && (
+            <button type="button" onClick={keepOriginal} disabled={!!busy} className="btn-ghost px-3 py-1.5 text-xs">
+              <i className="fa-solid fa-rotate-left" /> Keep original
+            </button>
+          )}
+          {value && removeBg && !original && (
+            <button type="button" onClick={cleanCurrent} disabled={!!busy} className="btn-ghost px-3 py-1.5 text-xs">
+              <i className="fa-solid fa-wand-magic-sparkles" /> Remove background
+            </button>
+          )}
           {value && (
             <>
               <a href={value} target="_blank" rel="noopener noreferrer" className="btn-ghost px-3 py-1.5 text-xs">
@@ -272,5 +330,31 @@ export function BooleanField({ value, onChange, label }) {
     <div className="pt-1">
       <Toggle checked={!!value} onChange={onChange} label={label} />
     </div>
+  )
+}
+
+/** Dropdown of rows from another table (e.g. a certificate's section). */
+export function RelationField({ id, value, onChange, table, labelField, orderBy = 'created_at' }) {
+  const [options, setOptions] = useState([])
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    supabase
+      .from(table)
+      .select(`id, ${labelField}`)
+      .order(orderBy)
+      .then(({ data, error: err }) => (err ? setError(err.message) : setOptions(data ?? [])))
+  }, [table, labelField, orderBy])
+
+  return (
+    <>
+      <select id={id} value={value ?? ''} onChange={(e) => onChange(e.target.value)} className="input">
+        <option value="">None</option>
+        {options.map((o) => (
+          <option key={o.id} value={o.id}>{o[labelField]}</option>
+        ))}
+      </select>
+      {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+    </>
   )
 }

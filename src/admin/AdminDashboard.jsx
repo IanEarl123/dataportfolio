@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
@@ -7,7 +8,7 @@ import ThemeToggle from '../components/layout/ThemeToggle'
 import AnalyticsPanel from './AnalyticsPanel'
 import ResourceManager from './ResourceManager'
 import ProfilePanel from './ProfilePanel'
-import CommentsPanel from './CommentsPanel'
+import CommentsPanel, { fetchUnseenCount } from './CommentsPanel'
 import { RESOURCES, RESOURCE_MAP } from './resources'
 
 const PANELS = { overview: AnalyticsPanel, profile: ProfilePanel, comments: CommentsPanel }
@@ -28,6 +29,13 @@ export default function AdminDashboard() {
   const requested = params.get('tab')
   const tab = RESOURCE_MAP[requested] || PANELS[requested] ? requested : 'overview'
   const Panel = PANELS[tab]
+  const [unseen, setUnseen] = useState(0)
+  const refreshUnseen = useCallback(() => fetchUnseenCount().then(setUnseen), [])
+
+  // New-comment badge on the Comments tab.
+  useEffect(() => {
+    refreshUnseen()
+  }, [refreshUnseen])
 
   const handleSignOut = async () => {
     await signOut()
@@ -75,6 +83,16 @@ export default function AdminDashboard() {
                     )}
                     <i className={`${t.icon} w-4 text-center`} />
                     {t.label}
+                    {t.key === 'comments' && unseen > 0 && (
+                      <motion.span
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="ml-auto rounded-full bg-accent px-1.5 font-mono text-[10px] font-semibold text-on-accent"
+                        aria-label={`${unseen} new`}
+                      >
+                        {unseen}
+                      </motion.span>
+                    )}
                   </button>
                 </li>
               )
@@ -91,7 +109,7 @@ export default function AdminDashboard() {
               exit={{ opacity: 0, y: -12 }}
               transition={{ duration: 0.25 }}
             >
-              {Panel ? <Panel /> : <ResourceManager resource={RESOURCE_MAP[tab]} />}
+              {Panel ? <Panel onSeen={refreshUnseen} /> : <ResourceManager resource={RESOURCE_MAP[tab]} />}
             </motion.div>
           </AnimatePresence>
         </section>

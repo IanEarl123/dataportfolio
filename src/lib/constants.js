@@ -6,16 +6,16 @@ export const STORAGE_BUCKET = 'portfolio'
 export const NAV_LINKS = [
   { path: '/', label: 'Home', icon: 'fa-solid fa-house' },
   { path: '/about', label: 'About', icon: 'fa-solid fa-user' },
+  { path: '/shop', label: 'Shop', icon: 'fa-solid fa-bag-shopping' },
+  { path: '/blog', label: 'Blog', icon: 'fa-solid fa-pen-nib' },
   { path: '/expertise', label: 'Expertise', icon: 'fa-solid fa-screwdriver-wrench' },
   { path: '/certifications', label: 'Certifications', icon: 'fa-solid fa-award' },
   { path: '/projects', label: 'Projects', icon: 'fa-solid fa-diagram-project' },
-  { path: '/blog', label: 'Blog', icon: 'fa-solid fa-pen-nib' },
-  { path: '/shop', label: 'Shop', icon: 'fa-solid fa-bag-shopping' },
   { path: '/experience', label: 'Experience', icon: 'fa-solid fa-briefcase' },
   { path: '/affiliation', label: 'Affiliation', icon: 'fa-solid fa-people-group' },
 ]
 
-export const SITE_URL = 'https://dataportfolio.vercel.app'
+export const SITE_URL = 'https://dataportfolio-eight.vercel.app'
 export const DEFAULT_PORTRAIT = '/img/ian-portrait.webp'
 // Start of BS Information Systems. Editable in Admin > Profile.
 export const DEFAULT_LEARNING_SINCE = 2017

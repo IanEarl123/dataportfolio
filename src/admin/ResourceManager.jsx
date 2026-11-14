@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { supabase } from '../lib/supabase'
-import { removeFileByUrl } from '../lib/storage'
+import { removeFileByUrl, uploadFile } from '../lib/storage'
+import { removeBackground } from '../lib/removeBackground'
 import { useCollection } from '../hooks/useCollection'
 import { useToast } from '../context/ToastContext'
 import Toggle from '../components/ui/Toggle'
@@ -17,6 +18,40 @@ export default function ResourceManager({ resource }) {
     ascending: resource.ascending ?? true,
   })
   const [query, setQuery] = useState('')
+  const [cleanOpen, setCleanOpen] = useState(false)
+  const [cleaning, setCleaning] = useState(null) // "3/7" while running
+  const cleanField = resource.fields.find((f) => f.name === resource.imageField && f.removeBg)
+  const cleanable = cleanField ? rows.filter((r) => r[cleanField.name]) : []
+
+  const cleanAll = async () => {
+    let cleaned = 0
+    let skipped = 0
+    let failed = 0
+    for (const [i, row] of cleanable.entries()) {
+      setCleaning(`${i + 1}/${cleanable.length}`)
+      try {
+        const result = await removeBackground(row[cleanField.name], row[resource.titleField] || 'image')
+        if (!result.changed) {
+          skipped++
+          continue
+        }
+        const url = await uploadFile(result.file, resource.key)
+        const { data, error: err } = await supabase.from(resource.key).update({ [cleanField.name]: url }).eq('id', row.id).select().single()
+        if (err) throw err
+        setRows((prev) => prev.map((r) => (r.id === row.id ? data : r)))
+        cleaned++
+      } catch (err) {
+        console.warn('Background removal failed for', row[resource.titleField], err)
+        failed++
+      }
+    }
+    setCleaning(null)
+    setCleanOpen(false)
+    toast.success(
+      `${cleaned} ${cleaned === 1 ? 'image' : 'images'} cleaned`,
+      [skipped && `${skipped} left as they are (photos or already transparent)`, failed && `${failed} failed (see the browser console)`].filter(Boolean).join('. ') || undefined,
+    )
+  }
   const [editing, setEditing] = useState(null) // null = new, row = edit (kept during close animation)
   const [formOpen, setFormOpen] = useState(false)
   const [deleting, setDeleting] = useState(null)
@@ -73,6 +108,11 @@ export default function ResourceManager({ resource }) {
             <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-xs text-ink3" />
             <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search…" className="input pl-9" />
           </div>
+          {cleanable.length > 0 && (
+            <button onClick={() => setCleanOpen(true)} className="btn-ghost shrink-0 px-3" title="Remove plain backgrounds from all images" aria-label="Remove backgrounds">
+              <i className="fa-solid fa-wand-magic-sparkles" /> <span className="hidden xl:inline">Backgrounds</span>
+            </button>
+          )}
           <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.95 }} onClick={() => { setEditing(null); setFormOpen(true) }} className="btn-primary shrink-0">
             <i className="fa-solid fa-plus" /> <span className="hidden sm:inline">New {resource.singular}</span>
           </motion.button>
@@ -138,6 +178,20 @@ export default function ResourceManager({ resource }) {
         open={formOpen}
         onClose={() => setFormOpen(false)}
         onSaved={handleSaved}
+      />
+
+      <ConfirmDialog
+        open={cleanOpen}
+        title="Remove backgrounds?"
+        message={cleaning
+          ? `Working… ${cleaning}`
+          : `Checks all ${cleanable.length} images and removes plain backgrounds, so only the logo or badge shows. Photos and screenshots are left as they are. Your original files stay in storage.`}
+        confirmLabel="Remove backgrounds"
+        icon="fa-solid fa-wand-magic-sparkles"
+        danger={false}
+        busy={!!cleaning}
+        onConfirm={cleanAll}
+        onCancel={() => setCleanOpen(false)}
       />
 
       <ConfirmDialog

@@ -4,7 +4,7 @@ import { formatDate, formatPrice, formatRange } from '../lib/format'
  * One entry per manageable table. The generic ResourceManager + ResourceForm
  * read this config, so adding a field is a one-line change here (plus the SQL column).
  *
- * Field types: text | textarea | markdown | number | date | url | select | boolean | tags | image | images | file | slug
+ * Field types: text | textarea | markdown | number | date | url | select | relation | boolean | tags | image | images | file | slug
  */
 export const RESOURCES = [
   {
@@ -24,7 +24,7 @@ export const RESOURCES = [
       { name: 'price', label: 'Price', type: 'number', step: '0.01', min: 0, required: true, half: true },
       { name: 'currency', label: 'Currency', type: 'select', options: ['PHP', 'USD', 'EUR'], default: 'PHP', half: true },
       { name: 'buy_url', label: 'Buy link (Gumroad, Shopee, …)', type: 'url', required: true },
-      { name: 'image_url', label: 'Product image', type: 'image' },
+      { name: 'image_url', label: 'Product image', type: 'image', removeBg: true, help: 'Plain backgrounds are removed automatically; photos are kept as they are.' },
       { name: 'is_active', label: 'Visible in shop', type: 'boolean', default: true, half: true },
       { name: 'sort_order', label: 'Sort order', type: 'number', default: 0, half: true },
     ],
@@ -46,7 +46,7 @@ export const RESOURCES = [
       { name: 'title', label: 'Title', type: 'text', required: true },
       { name: 'slug', label: 'URL slug', type: 'slug', from: 'title', required: true, help: 'yoursite.com/blog/<slug>' },
       { name: 'excerpt', label: 'Excerpt', type: 'textarea', rows: 2 },
-      { name: 'cover_url', label: 'Cover image', type: 'image', help: 'Shown as a short banner above the article.' },
+      { name: 'cover_url', label: 'Cover image', type: 'image', removeBg: true, help: 'Plain backgrounds are removed automatically; photos are kept as they are.' },
       { name: 'content', label: 'Content (Markdown)', type: 'markdown', required: true, help: 'The image button inserts photos inside the text. You can select several at once.' },
       { name: 'gallery', label: 'Photo gallery', type: 'images', help: 'Shown as a grid below the article.' },
       { name: 'tags', label: 'Tags', type: 'tags' },
@@ -67,7 +67,7 @@ export const RESOURCES = [
     fields: [
       { name: 'title', label: 'Title', type: 'text', required: true },
       { name: 'description', label: 'Description', type: 'textarea' },
-      { name: 'image_url', label: 'Screenshot / cover', type: 'image' },
+      { name: 'image_url', label: 'Screenshot / cover', type: 'image', removeBg: true, help: 'Plain backgrounds are removed automatically; screenshots are kept as they are.' },
       { name: 'icon', label: 'Fallback icon (Font Awesome class)', type: 'text', placeholder: 'fa-solid fa-chart-line', help: 'Shown when there is no image. Browse fontawesome.com/icons' },
       { name: 'tech_stack', label: 'Tech stack', type: 'tags' },
       { name: 'live_url', label: 'Live demo URL', type: 'url', half: true },
@@ -99,7 +99,7 @@ export const RESOURCES = [
     subtitle: (r) => (r.logo_url ? 'Custom logo' : r.icon),
     fields: [
       { name: 'name', label: 'Name', type: 'text', required: true },
-      { name: 'logo_url', label: 'Logo (optional)', type: 'image', help: 'An uploaded logo is used instead of the icon. Transparent PNGs look best.' },
+      { name: 'logo_url', label: 'Logo (optional)', type: 'image', removeBg: true, help: 'An uploaded logo is used instead of the icon. Plain backgrounds are removed automatically.' },
       { name: 'icon', label: 'Icon (Font Awesome class)', type: 'text', default: 'fa-solid fa-code', placeholder: 'fa-solid fa-chart-line', help: 'Browse fontawesome.com/icons', half: true },
       { name: 'color', label: 'Icon color', type: 'text', placeholder: '#00FF88', half: true },
       { name: 'sort_order', label: 'Sort order', type: 'number', default: 0, half: true },
@@ -117,10 +117,24 @@ export const RESOURCES = [
     fields: [
       { name: 'title', label: 'Title', type: 'text', required: true },
       { name: 'issuer', label: 'Issuer', type: 'text', required: true, half: true },
+      { name: 'section_id', label: 'Section', type: 'relation', table: 'cert_sections', labelField: 'name', orderBy: 'sort_order', help: 'Add or rename sections in the Cert Sections tab.', half: true },
       { name: 'issue_date', label: 'Issue date', type: 'date', half: true },
       { name: 'description', label: 'Description', type: 'textarea' },
-      { name: 'image_url', label: 'Certificate image / badge', type: 'image' },
+      { name: 'image_url', label: 'Certificate image / badge', type: 'image', removeBg: true, help: 'Plain backgrounds are removed automatically, so only the badge shows.' },
       { name: 'credential_url', label: 'Credential (verify link or PDF)', type: 'file', accept: 'application/pdf,image/*' },
+      { name: 'sort_order', label: 'Sort order', type: 'number', default: 0, half: true },
+    ],
+  },
+  {
+    key: 'cert_sections',
+    label: 'Cert Sections',
+    singular: 'Section',
+    icon: 'fa-solid fa-layer-group',
+    orderBy: 'sort_order',
+    titleField: 'name',
+    subtitle: (r) => `Order ${r.sort_order}`,
+    fields: [
+      { name: 'name', label: 'Section name', type: 'text', required: true, placeholder: 'e.g. Data Analysis, AI, Security' },
       { name: 'sort_order', label: 'Sort order', type: 'number', default: 0, half: true },
     ],
   },
